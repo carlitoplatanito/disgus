@@ -1,13 +1,19 @@
 {
   "name": "disgus",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.0.1",
+  "license": "Unlicense",
+  "author": {
+    "name": "Carlito Platanito",
+    "email": "carlitoplatanito@gmail.com",
+    "url": "https://carlitoplatanito.com"
+  },
+  "main": "dist/index.html",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
+  "files": ["dist"],
   "dependencies": {
     "@heroicons/react": "^2.0.13",
     "nostr-tools": "^1.1.0",

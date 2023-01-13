@@ -1,0 +1,21 @@
+name: Production Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  prodDeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+#     - run: sudo apt-get install -y make rsync zip
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+      - name: Install Deps
+        run: yarn install --frozen-lockfile
+      - name: Build
+        run: yarn build
+      - name: Release
+        run: yarn version minor && yarn release
