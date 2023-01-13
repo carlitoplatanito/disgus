@@ -7,6 +7,13 @@
     "email": "carlitoplatanito@gmail.com",
     "url": "https://carlitoplatanito.com"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "repository": {
+    "url": "https://github.com/carlitoplatanito/disgus.git"
+  },
   "main": "dist/index.html",
   "scripts": {
     "dev": "vite",
