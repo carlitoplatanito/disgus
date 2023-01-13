@@ -17,5 +17,5 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build
         run: yarn build
-      - name: Release
-        run: yarn version minor && yarn release
+#      - name: Release
+#        run: yarn version minor && yarn release
