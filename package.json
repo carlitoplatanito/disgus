@@ -14,7 +14,7 @@
   "repository": {
     "url": "https://github.com/carlitoplatanito/disgus.git"
   },
-  "homepage": "https://unpkg.com/disgus",
+  "homepage": "https://unpkg.com/disgus/dist",
   "main": "dist/index.html",
   "scripts": {
     "dev": "vite",
