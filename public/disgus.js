@@ -5,7 +5,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const disgusContainer = document.getElementById('disgus');
         const disgusFrame = document.createElement('iframe');
 
-        disgusFrame.src="./index.html";
+        disgusFrame.src="index.html";
         disgusFrame.width='100%';
         disgusFrame.style.border = 0;
         disgusFrame.style.margin = 0;
