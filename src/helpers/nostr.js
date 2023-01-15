@@ -270,6 +270,7 @@ export const createGuest = (name, relay = window.nostrRelay) => new Promise((res
 export const createChannel = (data, relay = window.nostrRelay) => new Promise((resolve, reject) => {
   const event = getBlankEvent();
   const pool = relayInit(relay);
+  const nos2x = window.top.nostr || window.nostr || false;
 
   event.kind = 40;
   event.tags = [
@@ -281,8 +282,8 @@ export const createChannel = (data, relay = window.nostrRelay) => new Promise((r
   event.pubkey = data.user.pubkey;
   event.id = getEventHash(event);
   
-  if (!data.user.privateKey && window.top.nostr) {
-    window.top.nostr.signEvent(event).then((signedEvent) => {
+  if (!data.user.privateKey && nos2x) {
+    nos2x.signEvent(event).then((signedEvent) => {
       pool.connect()
         .then(() => {
           const publisher = pool.publish(signedEvent);
@@ -302,7 +303,7 @@ export const createChannel = (data, relay = window.nostrRelay) => new Promise((r
             reject('There was an error');
           })
         });
-      });
+    });
   } else if (data.user.privateKey && localStorage.getItem('pubkey')) {
     event.sig = signEvent(event, data.user.privateKey);
 

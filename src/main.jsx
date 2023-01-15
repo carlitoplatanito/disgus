@@ -3,22 +3,28 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
-const doc = window.top?.document || window.document;
+const win = window.top || window; // incase in iframe
+const doc = win.document;
 
-const config = {
-  title: doc.title,
+const defaultConfig = {
+  title: doc.querySelector('meta[property="og:title"')?.getAttribute('content') || doc.title,
+  rootId: 'disgus',
   image: doc.querySelector('meta[property="og:image"')?.getAttribute('content') ||
-    doc.querySelector('meta[property="twitter:image"')?.getAttribute('content') ||
     'https://avatars.githubusercontent.com/u/137208',
   admin: doc.querySelector('meta[property="nostr:pubkey"]')?.getAttribute('content'),
   relay: doc.querySelector('meta[property="nostr:relay"]')?.getAttribute('content'),
-  canonical: doc.querySelector('link[rel="canonical"]')?.href || doc.location.href,
+  canonical: doc.querySelector('meta[property="og:url"')?.getAttribute('content') || doc.querySelector('link[rel="canonical"]')?.href || doc.location.href,
   nos2x: window.top.nostr || window.nostr || false
+};
+
+const config = {
+  ...defaultConfig,
+  ...win.disgusConfig // override config before calling script if you would like...
 };
 
 window.nostrRelay = config.relay;
 
-ReactDOM.createRoot(document.getElementById('comments')).render(
+ReactDOM.createRoot(doc.getElementById(config.rootId)).render(
   <React.StrictMode>
     <App config={config} />
   </React.StrictMode>,

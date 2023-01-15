@@ -14,19 +14,22 @@ Add the following code to the head of your page.
 
 ```html
 <!-- SHOULD provide a canonical URL -->
+<title>YOUR SITE TITLE</title>
 <link rel="canonical" href="https://your-website.com/blog-post" />
 <meta property="nostr:pubkey" content="YOUR_NOSTR_PUB_KEY" />
 <meta property="nostr:relay" content="YOUR_NOSTR_RELAY" />
-
 <!-- CAN provide the exact event_id for the channel to avoid ambuigity -->
-<meta property="nostr:channel" content="LEAVE_EMPTY_IF_NONE" />
+<meta property="nostr:channel" content="LEAVE_EMPTY_IF_NONE_IT_WILL_FIND_IT" />
+
+<!-- Our css -->
+<link rel="stylesheet" href="https://unpkg.com/disgus/dist/style.css">
 ```
 
 Add the following where you would like the comments to load up in the body of your page.
 
 ```html
-<div id="comments"></div>
-<script type="javascript" src="https://unpkg.com/disgus/dist/.js" async></script>
+<div id="disgus"></div>
+<script type="module" src="https://unpkg.com/disgus/dist/index.js" async></script>
 ```
 
 ## How it works

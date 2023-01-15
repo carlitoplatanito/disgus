@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getUser } from '../helpers/nostr';
-import { CheckBadgeIcon, HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/solid'
+import { CheckBadgeIcon } from '@heroicons/react/24/solid'
 
 export default function Comment(props) {
     const { pubkey, content, created_at } = props;
@@ -21,7 +21,6 @@ export default function Comment(props) {
             <div className="grid grid-cols-6 gap-2 shadow-bottom">
                 <div className="col-span-1 text-center pt-1">
                     <figure className="rounded-full overflow-hidden w-16 h-16 text-center" style={{backgroundColor: `#${pubkey.substr(0,6)}`}}>
-                        
                         {user && user.picture
                             ? <img className="rounded-full w-full h-auto" src={user.picture} />
     : <span className="text-xl inline-block">{pubkey.substr(0,2)}</span>}
