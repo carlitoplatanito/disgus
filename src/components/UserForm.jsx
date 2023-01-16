@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react';
-import { formatDate } from "../helpers/utils";
-import { getUser, postComment, createGuest } from '../helpers/nostr';
-import { FingerPrintIcon } from '@heroicons/react/24/solid'
-import NoWorkResult from 'postcss/lib/no-work-result';
-
+// import { formatDate } from "../helpers/utils";
+import { getUser, createGuest } from '../helpers/nostr';
+import { FingerPrintIcon } from '@heroicons/react/24/solid';
 
 export default function CommentForm({ user,  onSetUser, config }) {
-    const { relay, admin, nos2x } = config;
+    const { relay } = config;
     const [ name, setName ] = useState('');
 
     const signIn = () => {
-        nos2x.getPublicKey().then((pk) => {
-            getUser(pk).then((metadata) => {
+        window.nostr.getPublicKey().then((pk) => {
+            getUser(pk, relay).then((metadata) => {
                 localStorage.setItem('user', JSON.stringify(metadata));
                 onSetUser(metadata);
-            })
-        })
+            });
+        });
     }
 
     const signUp = () => {
@@ -26,7 +24,7 @@ export default function CommentForm({ user,  onSetUser, config }) {
 
     return (
         <div className="flex items-center justify-between">
-            {!user && nos2x &&
+            {!user && window.nostr &&
                 <div className="mr-4">
                     <button type="button" className="bg-black text-white font-bold py-2 px-4 whitespace-nowrap rounded focus:outline-none focus:shadow-outline" onClick={()=>signIn()}>
                         <FingerPrintIcon className="inline-block" width={18} /> <span>Sign In</span>
@@ -43,7 +41,7 @@ export default function CommentForm({ user,  onSetUser, config }) {
                         type="text"
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="name"
-                        placeholder="Continue as guest"
+                        placeholder="Continue as random"
                         value={name}
                         onChange={(e)=>setName(e.target.value)}
                         required
@@ -53,8 +51,7 @@ export default function CommentForm({ user,  onSetUser, config }) {
                     </button>
                 </form>
             }
-            
-                {user && <div className="w-full text-right">Signed in as <a title={user.pubkey} href={`nostr:${user.pubkey}`}>{user?.name || user.pubkey}</a></div>}
+            {user && <div className="w-full text-right">Signed in as <a title={user.pubkey} href={`nostr:${user.pubkey}`}>{user.name || user.pubkey}</a></div>}
         </div>
     )
 }

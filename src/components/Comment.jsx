@@ -27,23 +27,21 @@ export default function Comment(props) {
                     </figure>
                 </div>
                 <div className="col-span-5">
-                    <div>
-                        <div className="grid grid-cols-3">
-                            <div className="col-span-2 text-left">
-                                {user && user.name
-                                    ? <abbr title={pubkey} className="text-md block truncate">{user.display_name || user.name}{user.nip05 ? <div class="text-gray text-xs"><CheckBadgeIcon width={16} color="gray" className="inline" />{user.nip05}</div> : ''}</abbr>
-                                    : <span className="text-md text-gray-600 animate-pulse block truncate">{pubkey}</span>
-                                }
-                            </div>
-                            <div className="col-span-1 text-right">
-                                <time className="text-md whitespace-nowrap text-gray-600" dateTime={createdDate.toISOString()}>{formatDate(createdDate)}</time>
-                            </div>
+                    <div className="grid grid-cols-3">
+                        <div className="col-span-2 text-left">
+                            {user && user.name
+                                ? <abbr title={pubkey} className="text-md block truncate">{user.display_name || user.name}{user.nip05 ? <div className="text-gray text-xs"><CheckBadgeIcon width={16} color="gray" className="inline" />{user.nip05}</div> : ''}</abbr>
+                                : <span className="text-md text-gray-600 animate-pulse block truncate">{pubkey}</span>
+                            }
                         </div>
-                        <div className="mt-2">
-                            <p>{content}</p>
+                        <div className="col-span-1 text-right">
+                            <time className="text-md whitespace-nowrap text-gray-600" dateTime={createdDate.toISOString()}>{formatDate(createdDate)}</time>
                         </div>
-                        <hr className="mt-2 mb-4" />
                     </div>
+                    <div className="mt-2">
+                        <p>{content}</p>
+                    </div>
+                    <hr className="mt-2 mb-4" />
                 </div>
             </div>
         </div>

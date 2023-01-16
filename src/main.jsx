@@ -7,14 +7,14 @@ const win = window.top || window; // incase in iframe
 const doc = win.document;
 
 const defaultConfig = {
+  domRoot: doc.getElementById('disgus'),
+
+  relay: Array.from(doc.querySelectorAll('meta[property="nostr:relay"]')).map((r) => r.getAttribute('content')) || ['wss://brb.io', 'wss://relay.nosphr.com'],
+  canonical: doc.querySelector('meta[property="og:url"]')?.getAttribute('content') || doc.querySelector('link[rel="canonical"]')?.href || doc.location.href,
   title: doc.querySelector('meta[property="og:title"')?.getAttribute('content') || doc.title,
-  rootId: 'disgus',
-  image: doc.querySelector('meta[property="og:image"')?.getAttribute('content') ||
-    'https://avatars.githubusercontent.com/u/137208',
-  admin: doc.querySelector('meta[property="nostr:pubkey"]')?.getAttribute('content'),
-  relay: doc.querySelector('meta[property="nostr:relay"]')?.getAttribute('content'),
-  canonical: doc.querySelector('meta[property="og:url"')?.getAttribute('content') || doc.querySelector('link[rel="canonical"]')?.href || doc.location.href,
-  nos2x: window.top.nostr || window.nostr || false
+
+  // about: doc.querySelector('meta[property="og:description"')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '',
+  // image: doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || '',
 };
 
 const config = {
@@ -24,7 +24,7 @@ const config = {
 
 window.nostrRelay = config.relay;
 
-ReactDOM.createRoot(doc.getElementById(config.rootId)).render(
+ReactDOM.createRoot(config.domRoot).render(
   <React.StrictMode>
     <App config={config} />
   </React.StrictMode>,
