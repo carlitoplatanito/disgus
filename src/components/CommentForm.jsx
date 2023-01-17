@@ -1,23 +1,28 @@
 import { useState } from 'react';
-import { postComment } from '../helpers/nostr';
+import { postComment, createRootEvent, getComments } from '../helpers/nostr';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/solid'
 
-export default function CommentForm({user, config}) {
-    const { title, relay, canonical } = config;
+export default function CommentForm({ user, rootEvent, setRootEvent, setComments, config }) {
+    const { title, pubkey, relays, canonical } = config;
     const [ comment, setComment ] = useState('');
     
-    const createComment = () => {
+    const createComment = async () => {
+        const tags = [['e', rootEvent.id, relays[0], 'root']];
+        if (pubkey) {
+            tags.push(['p', pubkey]);
+        }
+        tags.push(['client', 'Disgus']);
+
         if (comment.length > 0) {
             postComment({
                 pubkey: user.pubkey,
                 content: comment,
-                // subject: `re: [${title}](${canonical})`,
-                tags: [
-                    ['r', canonical],
-                    ['client', 'Disgus']
-                ]
-            }, user.privateKey, relay).then(() => {
+                tags
+            }, user.privateKey, relays).then(() => {
                 setComment('');
+                getComments(config, rootEvent).then((_comments) => {
+                    setComments(_comments);
+                });
             });
         }
     }
@@ -35,12 +40,18 @@ export default function CommentForm({user, config}) {
                     id="comment"
                     placeholder="What do you have to say?"
                     value={comment}
-                    onChange={(e)=>setComment(e.target.value)}
+                    onChange={(e) => {
+                        if (!rootEvent && user) {
+                            createRootEvent(config, user).then((_root) => setRootEvent(_root));
+                        } else {
+                            setComment(e.target.value);
+                        }
+                    }}
                 />
                 <div className="text-sm">
-                    <p>
-                        In reply to <a className="underline" href={canonical}>{title}</a>
-                    </p>
+                    {rootEvent
+                        ? <p>In reply to <a className="underline" rel="root" href={`nostr:e:${rootEvent.id}`}>{title}</a></p>
+                        : <p>Be the first to comment</p>}
                 </div>
             </div>
             {user &&

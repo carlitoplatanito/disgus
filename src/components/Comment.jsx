@@ -4,13 +4,13 @@ import { getUser } from '../helpers/nostr';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid'
 
 export default function Comment(props) {
-    const { pubkey, content, created_at } = props;
+    const { pubkey, content, created_at, relays } = props;
     const [user, setUser] = useState(false);
     const createdDate = new Date(created_at * 1000);
 
     useEffect(() => {
         if (!user) {
-            getUser(pubkey).then((data) => {
+            getUser(pubkey, relays).then((data) => {
                 setUser(data);
             });
         }

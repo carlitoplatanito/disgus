@@ -4,27 +4,39 @@ import { getUser, createGuest } from '../helpers/nostr';
 import { FingerPrintIcon } from '@heroicons/react/24/solid';
 
 export default function CommentForm({ user,  onSetUser, config }) {
-    const { relay } = config;
+    const { relays } = config;
     const [ name, setName ] = useState('');
 
     const signIn = () => {
         window.nostr.getPublicKey().then((pk) => {
-            getUser(pk, relay).then((metadata) => {
-                localStorage.setItem('user', JSON.stringify(metadata));
-                onSetUser(metadata);
+            getUser(pk, relays).then((data) => {
+                const userData = {
+                    ...data,
+                    'pubkey': pk
+                };
+
+                localStorage.setItem('user', JSON.stringify(userData));
+                onSetUser(userData);
             });
         });
     }
 
     const signUp = () => {
-        createGuest(name, relay).then((data) => {
-            onSetUser(data);
+        createGuest(name, relays).then((data) => {
+            const userData = {
+                pubkey: data.pubkey,
+                privateKey: data.privateKey,
+                ...data
+            };
+
+            localStorage.setItem('user', JSON.stringify(userData))
+            onSetUser(userData);
         });
     }
 
     return (
         <div className="flex items-center justify-between">
-            {!user && window.nostr &&
+            {!user &&
                 <div className="mr-4">
                     <button type="button" className="bg-black text-white font-bold py-2 px-4 whitespace-nowrap rounded focus:outline-none focus:shadow-outline" onClick={()=>signIn()}>
                         <FingerPrintIcon className="inline-block" width={18} /> <span>Sign In</span>
