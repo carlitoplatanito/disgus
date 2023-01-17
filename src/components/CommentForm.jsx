@@ -41,11 +41,7 @@ export default function CommentForm({ user, rootEvent, setRootEvent, setComments
                     placeholder="What do you have to say?"
                     value={comment}
                     onChange={(e) => {
-                        if (!rootEvent && user) {
-                            createRootEvent(config, user).then((_root) => setRootEvent(_root));
-                        } else {
-                            setComment(e.target.value);
-                        }
+                        setComment(e.target.value);
                     }}
                 />
                 <div className="text-sm">

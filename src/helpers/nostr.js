@@ -146,7 +146,9 @@ export const getRootEvent = (config) => new Promise(async (resolve, reject) => {
     filter['#p'] = [ pubkey ];
   }
 
-  pool.map(async (conn) => {
+  const found = 0;
+
+  pool.map(async (conn, i) => {
     await conn.connect();
   
     const sub = conn.sub([
@@ -160,11 +162,16 @@ export const getRootEvent = (config) => new Promise(async (resolve, reject) => {
     sub.on('event', (event) => {
       localStorage.setItem(`r:${canonical}`, JSON.stringify(event));
       resolve(event);
+      found++;
     });
 
     sub.on('eose', () => {
       sub.unsub();
       conn.close();
+
+      if (found <= 0 && i >= pool.length) {
+        reject();
+      }
     });
   });
 });

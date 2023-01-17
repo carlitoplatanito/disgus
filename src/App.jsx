@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getComments, getRootEvent, getUser } from './helpers/nostr';
+import { createRootEvent, getComments, getRootEvent, getUser } from './helpers/nostr';
 import Comment from './components/Comment';
 import CommentForm from './components/CommentForm'
 import UserForm from './components/UserForm'
@@ -12,12 +12,19 @@ function App({ config }) {
 
   useEffect(() => {
     if (!rootEvent) {
-      getRootEvent(config).then((_event) => {
-        setRootEvent(_event);
-      });
+      getRootEvent(config)
+        .then((_event) => {
+          setRootEvent(_event);
+        })
+        .catch(() => {
+          if (user) {
+            createRootEvent(config, user).then((_event) => {
+              setRootEvent(_event);
+            })
+          }
+        })
     }
-    
-  }, [rootEvent]);
+  }, [rootEvent, user]);
 
   useEffect(() => {
     if (rootEvent) {
