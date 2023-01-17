@@ -6,8 +6,8 @@ export default function CommentForm({ user, rootEvent, setRootEvent, setComments
     const { title, pubkey, relays, canonical } = config;
     const [ comment, setComment ] = useState('');
     
-    const createComment = async () => {
-        const tags = [['e', rootEvent.id, relays[0], 'root']];
+    const createComment = async (rootEventId) => {
+        const tags = [['e', rootEventId, relays[0], 'root']];
         if (pubkey) {
             tags.push(['p', pubkey]);
         }
@@ -20,9 +20,6 @@ export default function CommentForm({ user, rootEvent, setRootEvent, setComments
                 tags
             }, user.privateKey, relays).then(() => {
                 setComment('');
-                getComments(config, rootEvent).then((_comments) => {
-                    setComments(_comments);
-                });
             });
         }
     }
@@ -31,7 +28,14 @@ export default function CommentForm({ user, rootEvent, setRootEvent, setComments
         <form className="py-4" onSubmit={
             (e)=>{
                 e.preventDefault();
-                createComment();
+                if (rootEvent) {
+                    createComment(rootEvent.id);
+                } else {
+                    createRootEvent(config, user).then((_event) => {
+                        setRootEvent(_event);
+                        createComment(_event.id);
+                    });
+                }
             }
         }>
             <div className="mt-2">

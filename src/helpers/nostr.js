@@ -35,9 +35,8 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
     ]);
 
     sub.on('event', (event) => {
-      if (event.content) {
-        comments.push(event);
-      }
+      comments.push(event);
+      getUser(event.pubkey, relays);
     });
 
     sub.on('eose', () => {
@@ -47,7 +46,6 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
           t.id === value.id
         ))
       );
-      resolve(comments);
       
       const now = Math.floor(new Date().getTime() / 1000);
 
@@ -55,7 +53,7 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
           last_updated: now,
           comments
       }));
-
+      resolve(comments);
       sub.unsub();
       conn.close();
     });
@@ -63,29 +61,44 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
 });
 
 export const getUser = (pubkey, relays) => new Promise((resolve, reject) => {
+  let user = {
+    pubkey,
+    created_at: 0
+  };
+
   if (localStorage.getItem(`p:${pubkey}`)) {
-      resolve(JSON.parse(localStorage.getItem(`p:${pubkey}`)));
+    let user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
+
+    resolve(user);
+    if (user.name) {
       return;
+    }
   }
 
   const pool = initPool(relays);
-
+  
   pool.map(async (conn) => {
     await conn.connect();
     const sub = conn.sub([
       {
-        limit: 1,
         kinds: [0],
         authors: [ pubkey ]
       }
     ]);
 
-    sub.on('event', (event) => {
-      localStorage.setItem(`p:${pubkey}`, event.content);
-      resolve(JSON.parse(event.content));
+    sub.on('event', (_event) => {
+      if (_event.created_at > user.created_at) {
+        user = {
+          ...user,
+          ...JSON.parse(_event.content),
+          created_at: _event.created_at
+        }
+      }
     });
 
     sub.on('eose', () => {
+      localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
+      resolve(user);
       sub.unsub();
       conn.close();
     });
@@ -146,8 +159,6 @@ export const getRootEvent = (config) => new Promise(async (resolve, reject) => {
     filter['#p'] = [ pubkey ];
   }
 
-  const found = 0;
-
   pool.map(async (conn, i) => {
     await conn.connect();
   
@@ -162,16 +173,11 @@ export const getRootEvent = (config) => new Promise(async (resolve, reject) => {
     sub.on('event', (event) => {
       localStorage.setItem(`r:${canonical}`, JSON.stringify(event));
       resolve(event);
-      found++;
     });
 
     sub.on('eose', () => {
       sub.unsub();
       conn.close();
-
-      if (found <= 0 && i >= pool.length) {
-        reject();
-      }
     });
   });
 });

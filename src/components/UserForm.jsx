@@ -3,34 +3,23 @@ import { useEffect, useState } from 'react';
 import { getUser, createGuest } from '../helpers/nostr';
 import { FingerPrintIcon } from '@heroicons/react/24/solid';
 
-export default function CommentForm({ user,  onSetUser, config }) {
+export default function CommentForm({ user,  setUser, config }) {
     const { relays } = config;
     const [ name, setName ] = useState('');
 
     const signIn = () => {
         window.nostr.getPublicKey().then((pk) => {
-            getUser(pk, relays).then((data) => {
-                const userData = {
-                    ...data,
-                    'pubkey': pk
-                };
-
-                localStorage.setItem('user', JSON.stringify(userData));
-                onSetUser(userData);
+            getUser(pk, relays).then((_user) => {
+                localStorage.setItem('user', JSON.stringify(_user));
+                setUser(_user);
             });
         });
     }
 
     const signUp = () => {
-        createGuest(name, relays).then((data) => {
-            const userData = {
-                pubkey: data.pubkey,
-                privateKey: data.privateKey,
-                ...data
-            };
-
-            localStorage.setItem('user', JSON.stringify(userData))
-            onSetUser(userData);
+        createGuest(name, relays).then((_user) => {
+            localStorage.setItem('user', JSON.stringify(_user))
+            setUser(_user);
         });
     }
 

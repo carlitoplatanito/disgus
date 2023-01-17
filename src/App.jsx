@@ -7,24 +7,23 @@ import UserForm from './components/UserForm'
 function App({ config }) {
   const { title, canonical, event_id, relays } = config;
   const [ rootEvent, setRootEvent ] = useState(false)
-  const [ user, setUser ] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : false);
+  const [ user, setUser ] = useState(false);
   const [ comments, setComments ] = useState([]);
+
+  useEffect(() => {
+    if (!user && localStorage.getItem('user')) {
+      setUser(JSON.parse(localStorage.getItem('user')));
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!rootEvent) {
       getRootEvent(config)
         .then((_event) => {
           setRootEvent(_event);
-        })
-        .catch(() => {
-          if (user) {
-            createRootEvent(config, user).then((_event) => {
-              setRootEvent(_event);
-            })
-          }
-        })
+        });
     }
-  }, [rootEvent, user]);
+  }, [rootEvent]);
 
   useEffect(() => {
     if (rootEvent) {
@@ -38,7 +37,7 @@ function App({ config }) {
     <div className="relative overflow-hidden my-2 p-2 sm:mx-auto sm:max-w-lg">
       <div className="border-bottom">
         <CommentForm config={config} user={user} setRootEvent={setRootEvent} rootEvent={rootEvent} setComments={setComments} />
-        <UserForm config={config} user={user} onSetUser={setUser} />
+        <UserForm config={config} user={user} setUser={setUser} />
       </div>
       <div>
       {comments.length > 0 ?
