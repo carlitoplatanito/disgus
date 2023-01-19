@@ -28,7 +28,7 @@ export const RootConsumer = RootContext.Consumer;
 export function useRoot() {
     const { config, rootEvent, setRootEvent, comments, setComments } = useContext(RootContext);
 
-    const createRoot = new Promise((resolve, reject) => {
+    const createRoot = () => new Promise((resolve, reject) => {
         createRootEvent(config).then((_event) => {
             setRootEvent(_event);
             resolve(_event);
