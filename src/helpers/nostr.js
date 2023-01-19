@@ -6,22 +6,24 @@ export const initPool = (relays) => {
   return pool;
 };
 
-export const getComments = (config, rootEvent, force = false) => new Promise((resolve, reject) => {
+export const getComments = (config, rootEvent) => new Promise((resolve, reject) => {
   const { relays } = config;
   const pool = initPool(relays);
   let comments = [];
   let since = 0;
+  let cached = {};
 
   if (localStorage.getItem(`e:${rootEvent.id}`)) {
-    const cached = JSON.parse(localStorage.getItem(`e:${rootEvent.id}`));
+    cached = JSON.parse(localStorage.getItem(`e:${rootEvent.id}`));
 
     comments = cached.comments;
-    if (!force) {
+    if (comments) {
       resolve(comments);
-      since = cached.updated_at;
     }
+    since = cached.updated_at;
   }
 
+  const returned = false;
   pool.map(async (conn) => {
     await conn.connect()
       
@@ -40,19 +42,22 @@ export const getComments = (config, rootEvent, force = false) => new Promise((re
 
     sub.on('eose', () => {
       // remove dupes
-      comments = comments.filter((value, index, self) =>
-        index === self.findIndex((t) => (
-          t.id === value.id
-        ))
-      );
-      
+      const _comments = comments.filter((value, index, self) =>
+                      index === self.findIndex((t) => (
+                        t.id === value.id
+                      ))
+                    );
       const now = Math.floor(new Date().getTime() / 1000);
-
       localStorage.setItem(`e:${rootEvent.id}`, JSON.stringify({
-          last_updated: now,
-          comments
+        ...cached,
+        updated_at: now,
+        comments: _comments
       }));
-      resolve(comments);
+
+      if (!returned) {
+        resolve(comments);
+        returned = true;
+      }
       sub.unsub();
       conn.close();
     });
@@ -129,7 +134,8 @@ export const createRootEvent = (config, user) => new Promise((resolve, reject) =
   const randomPubkey = getPublicKey(randomPrivate);
 
   event.pubkey = randomPubkey;
-  postComment(event, {pubkey: randomPubkey, privateKey: randomPrivate }, relays).then((_event) => {
+  postComment(event, { pubkey: randomPubkey, privateKey: randomPrivate }, relays).then((_event) => {
+    localStorage.setItem(`r:${canonical}`, JSON.stringify(_event));
     resolve(_event);
   });
 });
@@ -179,8 +185,6 @@ export const postComment = (event, user, relays) => new Promise(async(resolve, r
   event.created_at = Math.floor(Date.now() / 1000);
   event.id = getEventHash(event);
 
-  console.log(user);
-
   if (user && user.privateKey) {
     event.sig = signEvent(event, user.privateKey);
   } else {
@@ -193,18 +197,22 @@ export const postComment = (event, user, relays) => new Promise(async(resolve, r
       event.sig = signEvent(event, user.privateKey);
     }
   }
+  
+  const returned = false;
 
   pool.map(async (conn) => {
       await conn.connect();
       const publisher = conn.publish(event);
 
       publisher.on('seen', (_event) => {
-        resolve(_event);
+        if (!returned) {
+          resolve(event);
+          returned = true;
+        }
       });
 
       publisher.on('failed', (err) => {
         alert(err.message);
-        reject(_event);
       });
   });
 });

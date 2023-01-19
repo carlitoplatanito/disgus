@@ -31,13 +31,13 @@ export default function CommentForm() {
 
     return (
         <form className="pt-4" aria-disabled={!user} onSubmit={
-            (e)=>{
+            async (e) => {
                 e.preventDefault();
                 if (rootEvent) {
-                    createComment(rootEvent.id);
+                    await createComment(rootEvent.id);
                 } else {
-                    createRoot().then((_event) => {
-                        createComment(_event.id);
+                    createRoot().then(async (_event) => {
+                        await createComment(_event.id);
                     });
                 }
             }
