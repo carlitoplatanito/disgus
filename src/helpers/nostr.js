@@ -129,7 +129,7 @@ export const createRootEvent = (config, user) => new Promise((resolve, reject) =
   const randomPubkey = getPublicKey(randomPrivate);
 
   event.pubkey = randomPubkey;
-  postComment(event, randomPrivate, relays).then((_event) => {
+  postComment(event, {pubkey: randomPubkey, privateKey: randomPrivate }, relays).then((_event) => {
     resolve(_event);
   });
 });
