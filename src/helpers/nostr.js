@@ -116,7 +116,7 @@ export const createRootEvent = (config, user) => new Promise((resolve, reject) =
     content += `\n${description}`;
   }
   
-  content += `\n\n${canonical}\nThoughts?`;
+  content += `\nMore: ${canonical}\n\nComments powered by Disgus`;
 
   tags.push(['r', canonical]);
   tags.push(['client', 'Disgus']);
@@ -125,20 +125,13 @@ export const createRootEvent = (config, user) => new Promise((resolve, reject) =
     tags
   };
 
-  if (pubkey && user.pubkey === pubkey) {
-    event.pubkey = pubkey;
-    postComment(event, false, relay).then((ev) => {
-      resolve(ev);
-    });
-  } else {
-    const randomPrivate = generatePrivateKey();
-    const randomPubkey = getPublicKey(randomPrivate);
+  const randomPrivate = generatePrivateKey();
+  const randomPubkey = getPublicKey(randomPrivate);
 
-    event.pubkey = randomPubkey;
-    postComment(event, randomPrivate, relays).then((ev) => {
-      resolve(ev);
-    });
-  }
+  event.pubkey = randomPubkey;
+  postComment(event, randomPrivate, relays).then((_event) => {
+    resolve(_event);
+  });
 });
 
 export const getRootEvent = (config) => new Promise(async (resolve, reject) => {
