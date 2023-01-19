@@ -6,7 +6,7 @@ export const initPool = (relays) => {
   return pool;
 };
 
-export const getComments = (config, rootEvent) => new Promise((resolve, reject) => {
+export const getComments = (config, rootEvent, force = false) => new Promise((resolve, reject) => {
   const { relays } = config;
   const pool = initPool(relays);
   let comments = [];
@@ -16,10 +16,10 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
     const cached = JSON.parse(localStorage.getItem(`e:${rootEvent.id}`));
 
     comments = cached.comments;
-    resolve(comments);
-    since = cached.updated_at;
-    const now = Math.floor(new Date().getTime() / 1000);
-    // return;
+    if (!force) {
+      resolve(comments);
+      since = cached.updated_at;
+    }
   }
 
   pool.map(async (conn) => {
@@ -36,7 +36,6 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
 
     sub.on('event', (event) => {
       comments.push(event);
-      getUser(event.pubkey, relays);
     });
 
     sub.on('eose', () => {
@@ -60,17 +59,15 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
   })
 });
 
-export const getUser = (pubkey, relays) => new Promise((resolve, reject) => {
-  let user = {
-    pubkey,
-    created_at: 0
-  };
+export const getPubkey = (pubkey, relays) => new Promise((resolve, reject) => {
+  let user = { pubkey, created_at: 0 };
 
   if (localStorage.getItem(`p:${pubkey}`)) {
-    let user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
+    user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
 
-    resolve(user);
-    if (user.name) {
+    console.log(user);
+    if (user.created_at > 0) {
+      resolve(user);
       return;
     }
   }
@@ -87,18 +84,18 @@ export const getUser = (pubkey, relays) => new Promise((resolve, reject) => {
     ]);
 
     sub.on('event', (_event) => {
-      if (_event.created_at > user.created_at) {
+      if (!user.created_at || _event.created_at > user.created_at) {
         user = {
           ...user,
           ...JSON.parse(_event.content),
           created_at: _event.created_at
         }
+        localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
+        resolve(user);
       }
     });
 
     sub.on('eose', () => {
-      localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
-      resolve(user);
       sub.unsub();
       conn.close();
     });
@@ -182,90 +179,39 @@ export const getRootEvent = (config) => new Promise(async (resolve, reject) => {
   });
 });
 
-export const postComment = (event, privateKey, relays) => new Promise(async(resolve, reject) => {
+export const postComment = (event, user, relays) => new Promise(async(resolve, reject) => {
   const pool = initPool(relays);
 
   event.kind = 1;
   event.created_at = Math.floor(Date.now() / 1000);
   event.id = getEventHash(event);
 
-  if (privateKey) {
-    event.pubkey = getPublicKey(privateKey);
-    event.sig = signEvent(event, privateKey);
+  console.log(user);
 
-    pool.map(async (conn) => {
+  if (user && user.privateKey) {
+    event.sig = signEvent(event, user.privateKey);
+  } else {
+    if (window.nostr) {
+      const { sig } = await window.nostr.signEvent(event);
+
+      event.sig = sig;
+    } else {
+      const privateKey = prompt('Enter your private key', '');
+      event.sig = signEvent(event, user.privateKey);
+    }
+  }
+
+  pool.map(async (conn) => {
       await conn.connect();
       const publisher = conn.publish(event);
 
-      publisher.on('seen', (e) => {
-        resolve(e);
-      })
-
-      publisher.on('failed', () => {
-        console.error(conn, event);
-        reject();
-      })
-    });
-  } else if (window.nostr) {
-    window.nostr.signEvent(event).then((signedEvent) => {
-      pool.map(async (conn) => {
-        await conn.connect();
-        const publisher = conn.publish(signedEvent);
-
-        publisher.on('seen', (e) => {
-          resolve(e);
-        });
-
-        publisher.on('failed', () => {
-          reject(signedEvent);
-        });
+      publisher.on('seen', (_event) => {
+        resolve(_event);
       });
-    });
-  }
-});
 
-export const createGuest = (name, relays) => new Promise((resolve, reject) => {
-  const pool = initPool(relays);
-  const privateKey = generatePrivateKey();
-  const publicKey = getPublicKey(privateKey);
-  const guestProfile = {
-    name,
-    about: 'Random User from Disgus'
-  };
-
-  const event = getBlankEvent();
-
-  event.kind = 0;
-  event.pubkey = publicKey;
-  event.content = JSON.stringify(guestProfile);
-  event.tags = [['client', 'Disgus']];
-  event.created_at = Math.floor(Date.now() / 1000);
-  event.id = getEventHash(event);
-  event.sig = signEvent(event, privateKey);
-
-  pool.map(async (conn) => {
-    await conn.connect();
-    const publisher = conn.publish(event);
-
-    publisher.on('seen', () => {
-      localStorage.setItem('user', JSON.stringify({
-        pubkey: publicKey,
-        privateKey: privateKey,
-        ...guestProfile,
-        created_at: event.created_at
-      }));
-      conn.close();
-      resolve({
-        pubkey: publicKey,
-        privateKey: privateKey,
-        created_at: event.createdAt,
-        ...guestProfile
+      publisher.on('failed', (err) => {
+        alert(err.message);
+        reject(_event);
       });
-    });
-
-    publisher.on('failed', () => {
-      conn.close();
-      reject('There was an error');
-    });
   });
 });

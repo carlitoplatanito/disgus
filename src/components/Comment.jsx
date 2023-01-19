@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from "../helpers/utils";
-import { getUser } from '../helpers/nostr';
-import { CheckBadgeIcon } from '@heroicons/react/24/solid'
+import { getPubkey } from '../helpers/nostr';
+import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { useRoot } from '../context/root';
 
-export default function Comment(props) {
-    const { pubkey, content, created_at, relays } = props;
-    const [author, setAuthor] = useState(false);
+export default function Comment({ comment }) {
+    const { pubkey, content, created_at } = comment;
+    const { config } = useRoot();
+    const [ author, setAuthor ] = useState(false);
     const createdDate = new Date(created_at * 1000);
 
     useEffect(() => {
-        if (!author || !author.name) {
-            getUser(pubkey, relays).then((data) => {
-                setAuthor(data);
+        if (!author || author.pubkey !== pubkey) {
+            getPubkey(pubkey, config.relays).then((_user) => {
+                setAuthor(_user);
             });
         }
-    }, [author]);
+    }, [author, pubkey]);
 
     return (
         <div className="p-2 mx-auto">
@@ -29,10 +31,10 @@ export default function Comment(props) {
                 <div className="col-span-5">
                     <div className="grid grid-cols-3">
                         <div className="col-span-2 text-left">
-                            {author && author.name
-                                ? <abbr title={pubkey} className="text-md block truncate">{author.display_name || author.name}{author.nip05 ? <div className="text-gray text-xs"><CheckBadgeIcon width={16} color="gray" className="inline" />{author.nip05}</div> : ''}</abbr>
-                                : <span className="text-md text-gray-600 animate-pulse block truncate">{pubkey}</span>
-                            }
+                            <a href={author?.website || `nostr:p:${pubkey}`} title={pubkey} className="text-md block truncate">
+                                {author.display_name || author.name || pubkey}
+                                <div className="text-xs">{author.nip05 ? <><CheckBadgeIcon width={16} color="purple" className="inline" />{author.nip05.replace('_@','')}</>: <span className="opacity-50">{author.about || pubkey}</span> }</div>
+                            </a>
                         </div>
                         <div className="col-span-1 text-right">
                             <time className="text-md whitespace-nowrap text-gray-600" dateTime={createdDate.toISOString()}>{formatDate(createdDate)}</time>

@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { postComment, createRootEvent, getComments } from '../helpers/nostr';
-import { ChatBubbleLeftIcon } from '@heroicons/react/24/solid'
+import { ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
+import { useUser } from '../context/user';
+import { useRoot } from '../context/root';
 
-export default function CommentForm({ user, rootEvent, setRootEvent, setComments, config }) {
+export default function CommentForm() {
+    const { config, rootEvent, refreshComments } = useRoot();
     const { title, pubkey, relays, canonical } = config;
     const [ comment, setComment ] = useState('');
+    const { user } = useUser();
     
     const createComment = async (rootEventId) => {
         const tags = [['e', rootEventId, relays[0], 'root']];
@@ -18,21 +22,22 @@ export default function CommentForm({ user, rootEvent, setRootEvent, setComments
                 pubkey: user.pubkey,
                 content: comment,
                 tags
-            }, user.privateKey, relays).then(() => {
+            }, user, relays).then(() => {
                 setComment('');
+                refreshComments();
             });
         }
     }
 
     return (
-        <form className="py-4" onSubmit={
+        <form className="pt-4" aria-disabled={!user} onSubmit={
             (e)=>{
                 e.preventDefault();
                 if (rootEvent) {
                     createComment(rootEvent.id);
                 } else {
-                    createRootEvent(config, user).then((_event) => {
-                        setRootEvent(_event);
+                    createRootEvent(config, user).then(async (_event) => {
+                        await setRootEvent(_event);
                         createComment(_event.id);
                     });
                 }
@@ -54,13 +59,12 @@ export default function CommentForm({ user, rootEvent, setRootEvent, setComments
                         : <p>Be the first to comment</p>}
                 </div>
             </div>
-            {user &&
-            <div className="flex items-center justify-between">
-                <button type="submit" className="bg-black text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            {user && <div className="flex items-center justify-start">
+                <button type="submit" disabled={!user}  className="bg-black text-white font-bold py-2 px-4 rounded">
                     Comment
                 </button>
-            </div>
-            }
+                <div className="ml-2">as <a target="_blank" href={`nostr:p:${user.pubKey}`}>{user.name || user.pubkey}</a></div>
+            </div>}
         </form>
     );
 }

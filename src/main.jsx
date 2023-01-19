@@ -29,8 +29,6 @@ const config = {
   ...win.disgusConfig // override config before calling script if you would like...
 };
 
-window.nostrRelay = config.relay;
-
 ReactDOM.createRoot(config.domRoot).render(
   <React.StrictMode>
     <App config={config} />
