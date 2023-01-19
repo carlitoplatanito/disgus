@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { postComment, createRootEvent, getComments } from '../helpers/nostr';
+import { postComment } from '../helpers/nostr';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
 
 export default function CommentForm() {
-    const { config, rootEvent, refreshComments } = useRoot();
+    const { config, rootEvent, createRoot, refreshComments } = useRoot();
     const { title, pubkey, relays, canonical } = config;
     const [ comment, setComment ] = useState('');
     const { user } = useUser();
@@ -36,8 +36,7 @@ export default function CommentForm() {
                 if (rootEvent) {
                     createComment(rootEvent.id);
                 } else {
-                    createRootEvent(config, user).then(async (_event) => {
-                        await setRootEvent(_event);
+                    createRoot().then((_event) => {
                         createComment(_event.id);
                     });
                 }

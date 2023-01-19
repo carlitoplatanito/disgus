@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { relayInit, getEventHash, getBlankEvent, generatePrivateKey, getPublicKey, signEvent } from 'nostr-tools';
-import { initPool, getRootEvent, getComments } from '../helpers/nostr';
+import { initPool, getRootEvent, createRootEvent, getComments } from '../helpers/nostr';
 
 export const RootContext = React.createContext({});
 
@@ -28,7 +28,12 @@ export const RootConsumer = RootContext.Consumer;
 export function useRoot() {
     const { config, rootEvent, setRootEvent, comments, setComments } = useContext(RootContext);
 
-    const createRootEvent = () => {};
+    const createRoot = new Promise((resolve, reject) => {
+        createRootEvent(config).then((_event) => {
+            setRootEvent(_event);
+            resolve(_event);
+        })
+    });
 
     const refreshComments = () => {
         getComments(config, rootEvent, true).then((_comments) => {
@@ -36,5 +41,5 @@ export function useRoot() {
         });
     };
 
-    return { config, rootEvent, createRootEvent, comments, refreshComments };
+    return { config, rootEvent, createRoot, comments, refreshComments };
 }
