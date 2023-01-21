@@ -10,30 +10,28 @@ function App({ config }) {
   return (
     <RootProvider config={config}>
       <UserProvider>
-        <div className="relative overflow-hidden sm:mx-auto sm:max-w-xl">
-          <div className="border-bottom sticky">
+        <div className="relative overflow-hidden mx-auto px-2 sm:px-4">
             <UserForm />
             <CommentForm />
-          </div>
-          <div>
-            <RootConsumer>
-              {({ comments }) => {
-                if (comments && comments.length > 0) {
-                  return comments
-                    .filter((value, index, self) =>
-                      index === self.findIndex((t) => (
-                        t.id === value.id
-                      ))
-                    )
-                    .sort((a, b) => b.created_at - a.created_at)
-                    .map((comment, i) => <Comment key={i} comment={comment} />);
-                }
+            <div>
+              <RootConsumer>
+                {({ comments }) => {
+                  if (comments && comments.length > 0) {
+                    return comments
+                      .filter((value, index, self) =>
+                        index === self.findIndex((t) => (
+                          t.id === value.id
+                        ))
+                      )
+                      .sort((a, b) => b.created_at - a.created_at)
+                      .map((comment, i) => <Comment key={i} comment={comment} />);
+                  }
 
-                return <></>;
-              }}
-            </RootConsumer>
+                  return <></>;
+                }}
+              </RootConsumer>
+            </div>
           </div>
-        </div>
       </UserProvider>
     </RootProvider>
   )

@@ -23,7 +23,7 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
     since = cached.updated_at;
   }
 
-  const returned = false;
+  let returned = false;
   pool.map(async (conn) => {
     await conn.connect()
       
@@ -70,7 +70,6 @@ export const getPubkey = (pubkey, relays) => new Promise((resolve, reject) => {
   if (localStorage.getItem(`p:${pubkey}`)) {
     user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
 
-    console.log(user);
     if (user.created_at > 0) {
       resolve(user);
       return;
@@ -198,7 +197,7 @@ export const postComment = (event, user, relays) => new Promise(async(resolve, r
     }
   }
   
-  const returned = false;
+  let returned = false;
 
   pool.map(async (conn) => {
       await conn.connect();

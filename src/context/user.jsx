@@ -32,7 +32,7 @@ export function useUser() {
     const { relays } = config;
     const { user, setUser } = useContext(UserContext);
 
-    const signIn = () => {
+    const signInPlugin = () => {
         if (user) {
             return;
         }
@@ -44,19 +44,22 @@ export function useUser() {
                     setUser(_user);
                 });
             });
-        } else {
-            const privateKey = prompt('Enter your private key', '');
-            const pubkey = getPublicKey(privateKey);
+        }
+        return;
+    }
+    
+    const signInKey = () => {
+        const privateKey = prompt('Enter your private key', '');
+        const pubkey = getPublicKey(privateKey);
 
-            if (pubkey) {
-                getPubkey(publicKey, relays).then((_user) => {
-                    localStorage.setItem(cacheKey, JSON.stringify(_user));
-                    setUser({
-                        ...privateKey,
-                        _user
-                    });
+        if (pubkey) {
+            getPubkey(publicKey, relays).then((_user) => {
+                localStorage.setItem(cacheKey, JSON.stringify(_user));
+                setUser({
+                    ...privateKey,
+                    _user
                 });
-            }
+            });
         }
     }
 
@@ -65,11 +68,15 @@ export function useUser() {
             return;
         }
 
+        if (!name || name === '') {
+            name = prompt('Enter your name or nickname', 'Randy Rando');
+        }
+
         const privateKey = generatePrivateKey();
         const publicKey = getPublicKey(privateKey);
         const guestProfile = {
             name,
-            about: 'Random User from Disgus'
+            about: 'Random User'
         };
 
         const event = getBlankEvent();
@@ -116,5 +123,5 @@ export function useUser() {
         setUser(false);
     }
 
-    return { user, signIn, signOut, signInGuest };
+    return { user, signInPlugin, signInKey, signOut, signInGuest };
 }
