@@ -34,15 +34,14 @@ Add the following where you would like the comments to load up in the body of yo
 
 ## How it works
 
-Every page/author gets a channel created on the relay specified in the header. The comments are simply the messages inside of the channel.
+Every page/author gets a Nostr note/event created by a random user when posting the first response.
 
-Any Nostr client should be able to join and communicate in the channel outside of the website as well.
+This event becomes the 'root' note for all the other responses in the thread.
 
-By default the page title is set at the `name` of the channel, the canonical URL is set as the `about` and image used as the `picture`. (Considering just using the page icon as well)
+Offers NIP-07 for login or just type a name to post as a **Rando** (non-NIP05 veriefied temp guest like account).
 
-## Todo
+> If you have the same relays set on Damus or whatever other Nostr client you will be able to see replies, etc. The 'author' user will get alerts as they are tagged in the root post as well.
 
-- [] Anonymous posting
-- [] Reacting to comments & channel/page
-- [] Admistrative functions (mute message and/or user)
+## Work In Progress
 
+Lot's of ideas and features coming to this but feel free to open a ticket, pull request or hit me on Nostr (_@carlitoplatanito.com)
