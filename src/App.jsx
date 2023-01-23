@@ -19,6 +19,7 @@ function App({ config }) {
                   if (comments && comments.length > 0) {
                     return comments
                       .filter((value, index, self) =>
+                        
                         index === self.findIndex((t) => (
                           t.id === value.id
                         ))
