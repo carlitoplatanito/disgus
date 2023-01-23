@@ -32,7 +32,7 @@ export function useUser() {
     const { relays } = config;
     const { user, setUser } = useContext(UserContext);
 
-    const signInPlugin = () => {
+    const signIn = () => {
         if (user) {
             return;
         }
@@ -44,46 +44,43 @@ export function useUser() {
                     setUser(_user);
                 });
             });
-        }
-        return;
-    }
-    
-    const signInKey = () => {
-        const privateKey = prompt('Enter your private key', '');
-        const pubkey = getPublicKey(privateKey);
+        } else {
+            let privateKey = prompt('Enter your private key', '');
+            let pubkey = getPublicKey(privateKey);
 
-        if (pubkey) {
-            getPubkey(publicKey, relays).then((_user) => {
-                localStorage.setItem(cacheKey, JSON.stringify(_user));
-                setUser({
-                    ...privateKey,
-                    _user
+            if (pubkey) {
+                getPubkey(publicKey, relays).then((_user) => {
+                    localStorage.setItem(cacheKey, JSON.stringify(_user));
+                    setUser({
+                        ...privateKey,
+                        _user
+                    });
                 });
-            });
+            } else {
+                alert('Incorrect key.')
+            }
         }
     }
 
-    const signInGuest = (name) => {
+    const signInRandom = (_name) => {
         if (user) {
             return;
         }
 
-        if (!name || name === '') {
-            name = prompt('Enter your name or nickname', 'Randy Rando');
-        }
+        let name = _name || prompt('What\'s your name?', 'Randy Rando');
 
         const privateKey = generatePrivateKey();
         const publicKey = getPublicKey(privateKey);
-        const guestProfile = {
+        const randomProfile = {
             name,
-            about: 'Random User'
+            about: 'Random Guest'
         };
 
         const event = getBlankEvent();
 
         event.kind = 0;
         event.pubkey = publicKey;
-        event.content = JSON.stringify(guestProfile);
+        event.content = JSON.stringify(randomProfile);
         event.tags = [['client', 'Disgus']];
         event.created_at = Math.floor(Date.now() / 1000);
         event.id = getEventHash(event);
@@ -100,13 +97,13 @@ export function useUser() {
                         pubkey: publicKey,
                         privateKey: privateKey,
                         created_at: event.created_at,
-                        ...guestProfile
+                        ...randomProfile
                     }));
                     setUser({
                         pubkey: publicKey,
                         privateKey: privateKey,
                         created_at: event.created_at,
-                        ...guestProfile
+                        ...randomProfile
                     });
                 }
                 conn.close();
@@ -123,5 +120,5 @@ export function useUser() {
         setUser(false);
     }
 
-    return { user, signInPlugin, signInKey, signOut, signInGuest };
+    return { user, signIn, signOut, signInRandom };
 }

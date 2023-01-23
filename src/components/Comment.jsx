@@ -41,20 +41,18 @@ export default function Comment({ comment }) {
                             <time className="block text-xs opacity-70" dateTime={createdDate.toISOString()}><ClockIcon className="w-3 h-3 inline" /> {formatDate(createdDate)}</time>
                         </div>
                         <div className="text-right">
-                            <MinusIcon className="w-6 h-6 inline-block" />
-                            <EllipsisHorizontalIcon className="w-6 h-6 inline-block" />
+                            <MinusIcon className="w-6 h-6 hidden inline-block" />
+                            <EllipsisHorizontalIcon className="w-6 h-6 inline-block hidden" />
                         </div>
                     </div>
                     <div className="mt-2 text-md">
                         <p>{content}</p>
                     </div>
-                    <div className="mt-2 text-md">
+                    <div className="mt-2 text-md hidden">
                         <button className="mr-2"><HandThumbUpIcon className="-mt-1 mr-1 w-5 h-5 inline-block" /><span>0</span></button>
                         <button className="mr-2"><HandThumbDownIcon className="-mt-1 mr-1 w-5 h-5  inline-block" /><span>0</span></button>
-                        <span className="mx-2">&middot;</span>
-                        <button className="mr-2">Reply</button>
-                        <span className="mx-2">&middot;</span>
-                        <button className="mr-2">Share</button>
+                        <span className="mx-2 hidden">&middot;</span>
+                        <button className="mr-2 hidden">Reply</button>
                     </div>
                     <hr className="mt-2 mb-4" />
                 </div>

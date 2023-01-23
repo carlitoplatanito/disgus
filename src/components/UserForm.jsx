@@ -1,17 +1,13 @@
-import { useEffect, useState, Fragment } from 'react';
-// import { formatDate } from "../helpers/utils";
+import { Fragment } from 'react';
+import { classNames } from "../helpers/utils";
 import { Menu, Transition } from '@headlessui/react';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
-
 export default function UserForm() {
     const { comments } = useRoot();
-    const { user, signInGuest, signInPlugin, signInKey, signOut } = useUser();
+    const { user, signInRandom, signIn, signOut } = useUser();
     
     return (
         <div className="flex items-center justify-between">
@@ -20,7 +16,7 @@ export default function UserForm() {
             </div>
             <Menu as="div" className="relative block text-left">
                 <div>
-                    <Menu.Button className="inline-flex w-full align-center justify-center px-4 py-2 text-gray-700">
+                    <Menu.Button className="inline-flex w-full align-center justify-center px-4 py-2">
                         <figure className="avatar placeholder mr-4">
                         {user && user.picture
                             ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={user.picture} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
@@ -59,35 +55,22 @@ export default function UserForm() {
                     </div>
                     :<div className="py-1">
                         <Menu.Item>
-                        {({ active }) => (window.nostr && 
+                        {({ active }) => (
                             <a
-                            onClick={(e) => {e.preventDefault(); signInPlugin(); }}
+                            onClick={(e) => {e.preventDefault(); signIn(); }}
                             className={classNames(
                                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                                 'block px-4 py-2 text-sm'
                             )}
                             >
-                            Nos2x (recommended)
+                            Sign In
                             </a>
                         )}
                         </Menu.Item>
                         <Menu.Item>
                         {({ active }) => (
                             <a
-                            onClick={(e) => {e.preventDefault(); signInKey(); }}
-                            className={classNames(
-                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                                'block px-4 py-2 text-sm'
-                            )}
-                            >
-                            Secret Key
-                            </a>
-                        )}
-                        </Menu.Item>
-                        <Menu.Item>
-                        {({ active }) => (
-                            <a
-                            onClick={(e) => {e.preventDefault(); signInGuest(); }}
+                            onClick={(e) => {e.preventDefault(); signInRandom(); }}
                             className={classNames(
                                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                                 'block px-4 py-2 text-sm'

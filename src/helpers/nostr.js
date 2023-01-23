@@ -6,7 +6,7 @@ export const initPool = (relays) => {
   return pool;
 };
 
-export const getComments = (config, rootEvent) => new Promise((resolve, reject) => {
+export const getComments = (config, rootEvent, force) => new Promise((resolve, reject) => {
   const { relays } = config;
   const pool = initPool(relays);
   let comments = [];
@@ -17,14 +17,14 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
     cached = JSON.parse(localStorage.getItem(`e:${rootEvent.id}`));
 
     comments = cached.comments;
-    if (comments) {
+    if (comments && !force) {
       resolve(comments);
     }
-    since = cached.updated_at;
+    since = force ? 0 : cached.updated_at;
   }
 
   let returned = false;
-  pool.map(async (conn) => {
+  pool.map(async (conn) => {    
     await conn.connect()
       
     const sub = conn.sub([
@@ -59,7 +59,6 @@ export const getComments = (config, rootEvent) => new Promise((resolve, reject) 
         returned = true;
       }
       sub.unsub();
-      conn.close();
     });
   })
 });

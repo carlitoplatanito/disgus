@@ -16,3 +16,7 @@ export function formatDate(date, locales = browserLocales) {
 
     return new Intl.DateTimeFormat(locales, {dateStyle: today ? undefined : 'short', timeStyle: today ? 'medium' : 'short'}).format(date)
 }
+
+export function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
+}

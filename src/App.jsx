@@ -10,7 +10,7 @@ function App({ config }) {
   return (
     <RootProvider config={config}>
       <UserProvider>
-        <div className="relative overflow-hidden mx-auto px-2 sm:px-4">
+        <div className="relative text-left overflow-hidden mx-auto px-2 sm:px-4">
             <UserForm />
             <CommentForm />
             <div>
