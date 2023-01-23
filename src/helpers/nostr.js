@@ -38,6 +38,9 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve, r
 
     sub.on('event', (event) => {
       comments.push(event);
+      if (!localStorage.getItem(`e:${event.id}`)) {
+        localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
+      }
     });
 
     sub.on('eose', () => {
@@ -48,14 +51,15 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve, r
                       ))
                     );
       const now = Math.floor(new Date().getTime() / 1000);
-      localStorage.setItem(`e:${rootEvent.id}`, JSON.stringify({
-        ...cached,
-        updated_at: now,
-        comments: _comments
-      }));
-
-      if (!returned) {
-        resolve(comments);
+      
+      if (!cached?.updated_at || cached?.updated_at < now) {
+        localStorage.setItem(`e:${rootEvent.id}`, JSON.stringify({
+          ...cached,
+          updated_at: now,
+          comments: _comments
+        }));
+        cached.update_at = now;
+        resolve(_comments);
         returned = true;
       }
       sub.unsub();
