@@ -11,19 +11,19 @@ export default function UserForm() {
     
     return (
         <div className="flex items-center justify-between">
-            <div>
+            <div className="whitespace-nowrap truncate">
                 <b>{comments.length} Comments</b>
             </div>
-            <Menu as="div" className="relative block text-left">
+            <Menu as="div" className="relative block text-right">
                 <div>
-                    <Menu.Button className="inline-flex w-full align-center justify-center px-4 py-2">
-                        <figure className="avatar placeholder mr-4">
+                    <Menu.Button className="inline-flex align-center justify-center px-4 py-2">
+                        <figure className="avatar placeholder mr-2">
                         {user && user.picture
                             ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={user.picture} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
                             : <div className="flex items-center justify-center w-6 h-6 ring ring-1 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${user.pubkey ? user.pubkey.substr(0,6) : 'ffffff'}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-md">{user.pubkey ? user.pubkey.substr(0,2) : '?'}</span></div>
                         }
                         </figure>
-                        {user ? <b>{user.display_name || user.name || user.pubkey }</b> : <b>Login</b>}
+                        {user ? <b className="inline-block whitespace-nowrap w-auto truncate" style={{maxWidth: '250px'}}>{user.display_name || user.name || user.pubkey }</b> : <b>Login</b>}
                         <ChevronDownIcon className="-mr-1 ml-1 w-4" aria-hidden="true" />
                     </Menu.Button>
                 </div>
@@ -42,7 +42,7 @@ export default function UserForm() {
                         <Menu.Item>
                         {({ active }) => (
                             <a
-                            onClick={(e) => {e.preventDefault(); signOut(); }}
+                            onClick={(e) => { e.preventDefault(); signOut(); }}
                             className={classNames(
                                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                                 'block px-4 py-2 text-sm'
@@ -57,7 +57,7 @@ export default function UserForm() {
                         <Menu.Item>
                         {({ active }) => (
                             <a
-                            onClick={(e) => {e.preventDefault(); signIn(); }}
+                            onClick={(e) => { e.preventDefault(); signIn(); }}
                             className={classNames(
                                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                                 'block px-4 py-2 text-sm'

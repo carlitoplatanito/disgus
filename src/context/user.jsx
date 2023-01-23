@@ -68,6 +68,10 @@ export function useUser() {
         }
 
         let name = _name || prompt('What\'s your name?', 'Randy Rando');
+        
+        if (!name || name.length <= 0) {
+            return;
+        }
 
         const privateKey = generatePrivateKey();
         const publicKey = getPublicKey(privateKey);
