@@ -13,15 +13,21 @@ NIP07 compatible browser plug-in for login and admistration.
 Add the following code to the head of your page.
 
 ```html
-<!-- SHOULD provide a canonical URL -->
 <title>YOUR SITE TITLE</title>
-<link rel="canonical" href="https://your-website.com/blog-post" />
-<meta property="nostr:pubkey" content="YOUR_NOSTR_PUB_KEY" />
-<meta property="nostr:relay" content="YOUR_NOSTR_RELAY" />
-<!-- CAN provide the exact event_id for the channel to avoid ambuigity -->
-<meta property="nostr:channel" content="LEAVE_EMPTY_IF_NONE_IT_WILL_FIND_IT" />
 
-<!-- Our css -->
+<!-- IF NO CANONICAL IS PROVIDED IT WILL USE THE WEBSITE URL -->
+<link rel="canonical" href="https://your-website.com/blog-post" />
+
+<!-- PROVIDE the pubkey so it can be tagged for responses/alerts -->
+<meta property="nostr:pubkey" content="YOUR_NOSTR_PUB_KEY" />
+
+<!-- CAN provide multiple relays -->
+<meta property="nostr:relay" content="OPTIONAL_NOSTR_RELAY" />
+<meta property="nostr:relay" content="OPTIONAL_NOSTR_RELAY" />
+<!-- CAN provide the exact event_id for the root event to avoid ambuigity -->
+<meta property="nostr:event_id" content="OPTIONAL_IF_NONE_IT_WILL_CREATE_OR_FIND_IT" />
+
+<!-- MUST PROVIDE OUR CSS -->
 <link rel="stylesheet" href="https://unpkg.com/disgus/dist/style.css">
 ```
 
@@ -29,6 +35,8 @@ Add the following where you would like the comments to load up in the body of yo
 
 ```html
 <div id="disgus"></div>
+
+<!-- this can go at the end of the body -->
 <script type="module" src="https://unpkg.com/disgus/dist/index.js" async></script>
 ```
 
