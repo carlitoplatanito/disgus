@@ -17,14 +17,28 @@ function App({ config }) {
               <RootConsumer>
                 {({ comments }) => {
                   if (comments && comments.length > 0) {
+                    const _times = {};
+
                     return comments
-                      .filter((value, index, self) =>
-                        
-                        index === self.findIndex((t) => (
-                          t.id === value.id
-                        ))
+                      .filter((value, index, self) => {
+                          _times[value.id] = value.created_at;
+                  
+                          return index === self.findIndex((t) => (
+                            t.id === value.id
+                          ));
+                        }
                       )
-                      .sort((a, b) => b.created_at - a.created_at)
+                      .sort((a, b) => {
+                        const eventTags = a.tags.filter((t) => t[0] === 'e').map((t) => t[1]);
+
+                        if (eventTags.length > 1) {
+                          const parentId = eventTags[eventTags.length -1];
+                  
+                          return b.created_at - (_times[parentId] - 1);
+                        }
+                        
+                        return b.created_at - a.created_at;
+                      })
                       .map((comment, i) => <Comment key={i} comment={comment} />);
                   }
 

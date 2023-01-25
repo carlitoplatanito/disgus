@@ -25,45 +25,49 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve, r
 
   let returned = false;
   pool.map(async (conn) => {    
-    await conn.connect()
-      
-    const sub = conn.sub([
-      {
-        limit: 100,
-        kinds: [1],
-        since,
-        '#e': [ rootEvent.id ]
-      }
-    ]);
+    try {
+      await conn.connect()
+        
+      const sub = conn.sub([
+        {
+          limit: 100,
+          kinds: [1],
+          since,
+          '#e': [ rootEvent.id ]
+        }
+      ]);
 
-    sub.on('event', (event) => {
-      comments.push(event);
-      if (!localStorage.getItem(`e:${event.id}`)) {
-        localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
-      }
-    });
+      sub.on('event', (event) => {
+        comments.push(event);
+        if (!localStorage.getItem(`e:${event.id}`)) {
+          localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
+        }
+      });
 
-    sub.on('eose', () => {
-      // remove dupes
-      const _comments = comments.filter((value, index, self) =>
-                      index === self.findIndex((t) => (
-                        t.id === value.id
-                      ))
-                    );
-      const now = Math.floor(new Date().getTime() / 1000);
-      
-      if (!cached?.updated_at || cached?.updated_at < now) {
-        localStorage.setItem(`e:${rootEvent.id}`, JSON.stringify({
-          ...cached,
-          updated_at: now,
-          comments: _comments
-        }));
-        cached.update_at = now;
-        resolve(_comments);
-        returned = true;
-      }
-      sub.unsub();
-    });
+      sub.on('eose', () => {
+        // remove dupes
+        const _comments = comments.filter((value, index, self) =>
+                        index === self.findIndex((t) => (
+                          t.id === value.id
+                        ))
+                      );
+        const now = Math.floor(new Date().getTime() / 1000);
+        
+        if (!cached?.updated_at || cached?.updated_at < now) {
+          localStorage.setItem(`e:${rootEvent.id}`, JSON.stringify({
+            ...cached,
+            updated_at: now,
+            comments: _comments
+          }));
+          cached.update_at = now;
+          resolve(_comments);
+          returned = true;
+        }
+        sub.unsub();
+      });
+    } catch (err) {
+      console.log(err?.message);
+    }
   })
 });
 
