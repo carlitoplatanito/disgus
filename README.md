@@ -2,15 +2,20 @@
 
 A commenting system for your blog or website based on [Nostr](https://github.com/nostr-protocol/nostr) open protocol. It's like Disqus but Nostier...
 
+Demo available at https://carlitoplatanito.com/demo
+
 ## Requirements
 
 Must have a Nostr `pubkey` and `relay`.
 
-NIP07 compatible browser plug-in for login and admistration.
+NIP07 compatible browser plug-in for login.
 
 ## Usage
 
-Add the following code to the head of your page.
+The script will grab the title & URL from the meta of the page.
+
+Define the authors `pubkey` using the `nostr:pubkey` property and relays as `nostr:relay`.
+
 
 ```html
 <title>YOUR SITE TITLE</title>
@@ -27,13 +32,14 @@ Add the following code to the head of your page.
 <!-- CAN provide the exact event_id for the root event to avoid ambuigity -->
 <meta property="nostr:event_id" content="OPTIONAL_IF_NONE_IT_WILL_CREATE_OR_FIND_IT" />
 
-<!-- MUST PROVIDE OUR CSS -->
+<!-- MUST PROVIDE CSS -->
 <link rel="stylesheet" href="https://unpkg.com/disgus/dist/style.css">
 ```
 
 Add the following where you would like the comments to load up in the body of your page.
 
 ```html
+<!-- div with the ID disgus where you would like to display the comments & form -->
 <div id="disgus"></div>
 
 <!-- this can go at the end of the body -->
