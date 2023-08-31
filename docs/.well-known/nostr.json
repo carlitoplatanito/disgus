@@ -1,0 +1,9 @@
+{
+  "names": {
+    "_": "a669b80ebd5372f13eaf40437a36a31bc792e178a8f066093307771f2e8a0130"
+  },
+  "relays": [
+    "wss://relay.damus.com",
+    "wss://purplepag.es"
+  ]
+}
