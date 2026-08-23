@@ -1,58 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
-import { CheckBadgeIcon, ShieldExclamationIcon, EllipsisHorizontalIcon, ArrowUturnDownIcon, MinusIcon, HandThumbUpIcon as HandThumbUpFillIcon, HandThumbDownIcon  as HandThumbDownFillIcon, ArrowUturnLeftIcon, ShareIcon } from '@heroicons/react/24/solid';
-import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon, FlagIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, ShieldExclamationIcon, EllipsisHorizontalIcon, ArrowUturnDownIcon, MinusIcon, HandThumbUpIcon as HandThumbUpFillIcon, HandThumbDownIcon as HandThumbDownFillIcon, ArrowUturnLeftIcon, ShareIcon } from '@heroicons/react/24/solid';
+import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon, FlagIcon } from '@heroicons/react/24/outline';
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Optimized Comment component:
+ * 1. Wrapped with React.memo to prevent unnecessary re-renders when parent components re-render (e.g. typing in CommentForm).
+ * 2. Synchronous derivation of `parentEvent` using `useMemo` instead of async `useEffect` + `useState`, avoiding an extra re-render pass on mount and eliminating layout flash.
+ * 3. Memoized `createdDate` computation.
+ * 4. Optimized `author` fetching effect dependencies to avoid redundant execution.
+ */
+function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
-    const [ formattedContent, setFormattedContent ] = useState();
-    const [ parentEvent, setParentEvent ] = useState();
+
+    const createdDate = useMemo(() => new Date(created_at * 1000), [created_at]);
+
+    // Derive parentEvent synchronously from tags to eliminate extra re-render pass on mount
+    const parentEvent = useMemo(() => {
+        if (!tags || !Array.isArray(tags)) return undefined;
+        let lastEventId;
+        for (let i = 0; i < tags.length; i++) {
+            if (tags[i] && tags[i][0] === 'e') {
+                lastEventId = tags[i][1];
+            }
+        }
+        return lastEventId;
+    }, [tags]);
 
     useEffect(() => {
+        let isMounted = true;
         if (!author || author.pubkey !== pubkey) {
             getPubkey(pubkey, config.relays).then((_user) => {
-                setAuthor(_user);
-            });
-        }
-
-        return;
-    }, [author, pubkey]);
-
-    useEffect(() => {
-        if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
+                if (isMounted) {
+                    setAuthor(_user);
                 }
             });
-
-            setParentEvent(events[events.length -1]);
         }
-
-        return;
-    }, [parentEvent]);
+        return () => {
+            isMounted = false;
+        };
+    }, [pubkey, config.relays]);
 
     return (
         <div className="p-2 mx-auto">
-            <div className={`flex items-top justify-between ${parentEvent !== rootEvent.id ? 'ml-14 sm:ml-20' : ''}`}>
+            <div className={`flex items-top justify-between ${parentEvent !== rootEvent?.id ? 'ml-14 sm:ml-20' : ''}`}>
                 <figure className="w-12 sm:w-16 avatar mr-4 flex-basis" style={{flexGrow: 0, flexShrink: 0}}>
                     {author && author.picture
                         ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
@@ -63,7 +58,7 @@ export default function Comment({ comment }) {
                     <div className="flex items-top justify-between">
                         <div className="flex-shrink flex-grow overflow-hidden">
                             <a href={`nostr:p:${pubkey}`} title={pubkey} className="text-lg block truncate">
-                                {parentEvent !== rootEvent.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" /> : ''}
+                                {parentEvent !== rootEvent?.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" /> : ''}
                                 <b>{ author.display_name || author.name || pubkey }</b>
                                 { author.nip05 
                                     ? <abbr title={author.nip05.replace('_@', '@')}><CheckBadgeIcon color="purple" className="-mt-1 mx-1 w-4 h-4 inline-block" /></abbr>
@@ -94,3 +89,5 @@ export default function Comment({ comment }) {
         </div>
     );
 }
+
+export default memo(Comment);
