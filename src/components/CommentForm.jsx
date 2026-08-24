@@ -54,9 +54,13 @@ export default function CommentForm() {
             focusTimer = setTimeout(() => setFocused(false), 100);
         }}
         >
+            <label htmlFor="comment" className="sr-only">
+                Write a comment
+            </label>
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Write a comment"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={focused || comment.length > 0 ? 3 : 1}
@@ -67,8 +71,8 @@ export default function CommentForm() {
             {(focused || comment.length > 0) && 
             <div className="bg-gray-100 text-black m-0 px-2 py-1 flex items-center justify-between">
                 {rootEvent
-                    ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
-                    : <EllipsisHorizontalCircleIcon width={18} />
+                    ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon aria-hidden="true" className="inline-block" width={18} /> {rootEvent.id}</a>
+                    : <EllipsisHorizontalCircleIcon aria-hidden="true" width={18} />
                 }
                 {user ?
                 <Button type="submit" variant="primary">
@@ -86,8 +90,8 @@ export default function CommentForm() {
             </div>}
         </form>
         <div className="my-3 mx-1">
-            <Button variant="secondary" className="hidden mr-2"><BookmarkIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>0</b></Button>
-            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
+            <Button variant="secondary" className="hidden mr-2"><BookmarkIcon aria-hidden="true" className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>0</b></Button>
+            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank"><ShareIcon aria-hidden="true" className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
         </div>
         </>
     );
