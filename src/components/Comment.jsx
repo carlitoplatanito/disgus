@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, EllipsisHorizontalIcon, ArrowUturnDownIcon, MinusIcon, HandThumbUpIcon as HandThumbUpFillIcon, HandThumbDownIcon  as HandThumbDownFillIcon, ArrowUturnLeftIcon, ShareIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon, FlagIcon } from '@heroicons/react/24/outline'
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Optimized Comment component:
+ * 1. Wrapped in React.memo to prevent unnecessary re-renders when parent components update state.
+ * 2. `createdDate` computation memoized with `useMemo` to prevent Date object allocation on every render.
+ */
+function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
+    const createdDate = useMemo(() => new Date(created_at * 1000), [created_at]);
     const [ formattedContent, setFormattedContent ] = useState();
     const [ parentEvent, setParentEvent ] = useState();
 
@@ -94,3 +99,5 @@ export default function Comment({ comment }) {
         </div>
     );
 }
+
+export default memo(Comment);
