@@ -4,6 +4,7 @@ import CommentForm from './components/CommentForm';
 import UserForm from './components/UserForm';
 import { UserProvider } from './context/user';
 import { RootProvider, RootConsumer } from './context/root';
+import { getParentEventId } from './helpers/utils';
 
 /**
  * Memoized comment list component.
@@ -36,20 +37,9 @@ function CommentList({ comments }) {
     const sortTimes = new Map();
     for (let i = 0; i < uniqueComments.length; i++) {
       const item = uniqueComments[i];
-      let parentId = null;
-      let eCount = 0;
+      const parentId = getParentEventId(item.tags);
 
-      if (Array.isArray(item.tags)) {
-        for (let j = 0; j < item.tags.length; j++) {
-          const t = item.tags[j];
-          if (t && t[0] === 'e') {
-            eCount++;
-            parentId = t[1];
-          }
-        }
-      }
-
-      if (eCount > 1 && parentId && _times[parentId] !== undefined) {
+      if (parentId && _times[parentId] !== undefined) {
         sortTimes.set(item.id, _times[parentId] - 1);
       } else {
         sortTimes.set(item.id, item.created_at);

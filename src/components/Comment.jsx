@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { formatDate } from "../helpers/utils";
+import { formatDate, getParentEventId } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
@@ -25,30 +25,12 @@ export default function Comment({ comment }) {
 
     useEffect(() => {
         if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
-                }
-            });
-
-            setParentEvent(events[events.length -1]);
+            const parentId = getParentEventId(tags);
+            setParentEvent(parentId || rootEvent.id);
         }
 
         return;
-    }, [parentEvent]);
+    }, [parentEvent, tags, rootEvent]);
 
     return (
         <div className="p-2 mx-auto">
