@@ -13,7 +13,7 @@
     "access": "public"
   },
   "repository": {
-    "url": "https://github.com/carlitoplatanito/disgus.git"
+    "url": "git+https://github.com/carlitoplatanito/disgus.git"
   },
   "homepage": "https://github.com/carlitoplatanito/disgus",
   "main": "dist/index.js",
