@@ -18,6 +18,13 @@ function getMetaContents(property) {
   return Array.from(doc.querySelectorAll(`meta[property="${property}"]`)).map(r => r.getAttribute('content'));
 }
 
+function parseBool(val, defaultValue = true) {
+  if (val === null || val === undefined) return defaultValue;
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'string') return val.toLowerCase() !== 'false';
+  return Boolean(val);
+}
+
 function readConfig() {
   const script = doc.querySelector('script[data-disgus]');
 
@@ -36,6 +43,10 @@ function readConfig() {
       || doc.location.href,
     title: getMetaContent('og:title')
       || doc.title,
+    share: parseBool(
+      script?.getAttribute('data-share') ?? getMetaContent('nostr:share'),
+      true
+    ),
   };
 }
 
@@ -46,6 +57,7 @@ function mountApp(domRoot, overrides = {}) {
     ...Object.fromEntries(Object.entries(overrides).filter(([, v]) => v != null)),
     ...win.disgusConfig,
   };
+  config.share = parseBool(config.share, true);
   ReactDOM.createRoot(config.domRoot).render(
     <React.StrictMode>
       <App config={config} />
@@ -60,6 +72,7 @@ class DisgusComments extends HTMLElement {
       pubkey: this.getAttribute('pubkey') || undefined,
       relays: this.getAttribute('relays')?.split(',').map(r => r.trim()),
       event_id: this.getAttribute('event-id') || undefined,
+      share: this.hasAttribute('share') ? parseBool(this.getAttribute('share')) : undefined,
     });
   }
 }

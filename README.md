@@ -90,6 +90,7 @@ verified temp guest account).
 | Event ID           | `event-id`                                     | `data-event-id` | `nostr:event_id`         |
 | Canonical URL      | Auto (og:url / link[rel=canonical] / location) |                 | `og:url`                 |
 | Title              | Auto (og:title / document.title)               |                 | `og:title`               |
+| Share Button       | `share` ("true"/"false")                       | `data-share`    | `nostr:share`            |
 
 ## Development
 
