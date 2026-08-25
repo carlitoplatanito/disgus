@@ -7,8 +7,13 @@ import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 export default function UserForm() {
     const { comments } = useRoot();
-    const { user, signInRandom, signIn, signOut } = useUser();
-    
+    const {
+        user, extensionAvailable,
+        signInExtension, signInWithKey, signInPasskey,
+        importPasskeyFromNsec, exportPasskeyNsec,
+        signInRandom, signOut, passkeyAvailable,
+    } = useUser();
+
     return (
         <div className="flex items-center justify-between">
             <div className="whitespace-nowrap truncate">
@@ -37,8 +42,23 @@ export default function UserForm() {
                     leaveTo="transform opacity-0 scale-95"
                 >
                     <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    {user ? 
+                    {user ? (
                     <div className="py-1">
+                        {user.signer && (
+                        <Menu.Item>
+                            {({ active }) => (
+                            <a
+                                onClick={(e) => { e.preventDefault(); exportPasskeyNsec(); }}
+                                className={classNames(
+                                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                                    'block px-4 py-2 text-sm'
+                                )}
+                            >
+                                Export nsec from Passkey
+                            </a>
+                            )}
+                        </Menu.Item>
+                        )}
                         <Menu.Item>
                         {({ active }) => (
                             <a
@@ -53,17 +73,62 @@ export default function UserForm() {
                         )}
                         </Menu.Item>
                     </div>
-                    :<div className="py-1">
+                    ) : (
+                    <div className="py-1">
                         <Menu.Item>
                         {({ active }) => (
                             <a
-                            onClick={(e) => { e.preventDefault(); signIn(); }}
+                            onClick={(e) => { e.preventDefault(); signInPasskey(); }}
                             className={classNames(
                                 active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                                 'block px-4 py-2 text-sm'
                             )}
                             >
-                            Sign In
+                            {passkeyAvailable ? 'Sign In with Passkey' : 'Register Passkey'}
+                            </a>
+                        )}
+                        </Menu.Item>
+                        <Menu.Item>
+                        {({ active }) => (
+                            <a
+                            onClick={(e) => { e.preventDefault(); importPasskeyFromNsec(); }}
+                            className={classNames(
+                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                                'block px-4 py-2 text-sm'
+                            )}
+                            >
+                            Import nsec → Passkey
+                            </a>
+                        )}
+                        </Menu.Item>
+                        <Menu.Item disabled>
+                        {({ active }) => (
+                            <div className="border-t border-gray-200 my-1" />
+                        )}
+                        </Menu.Item>
+                        <Menu.Item>
+                        {({ active }) => (
+                            <a
+                            onClick={(e) => { e.preventDefault(); signInExtension(); }}
+                            className={classNames(
+                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                                'block px-4 py-2 text-sm'
+                            )}
+                            >
+                            Extension (NIP-07)
+                            </a>
+                        )}
+                        </Menu.Item>
+                        <Menu.Item>
+                        {({ active }) => (
+                            <a
+                            onClick={(e) => { e.preventDefault(); signInWithKey(); }}
+                            className={classNames(
+                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                                'block px-4 py-2 text-sm'
+                            )}
+                            >
+                            Private Key
                             </a>
                         )}
                         </Menu.Item>
@@ -80,7 +145,8 @@ export default function UserForm() {
                             </a>
                         )}
                         </Menu.Item>
-                    </div>}
+                    </div>
+                    )}
                     </Menu.Items>
                 </Transition>
             </Menu>

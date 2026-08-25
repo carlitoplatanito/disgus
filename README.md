@@ -1,6 +1,11 @@
 # 🤮 Disgus
 
-A commenting system for your blog or website based on [Nostr](https://github.com/nostr-protocol/nostr) open protocol. It's like Disqus but Nostier...
+![Workflow](https://github.com/carlitoplatanito/disgus/actions/workflows/main.yml/badge.svg)
+![npm version](https://img.shields.io/npm/v/disgus.svg)
+
+A commenting system for your blog or website based on
+[Nostr](https://github.com/nostr-protocol/nostr) open protocol. It's like Disqus
+but Nostier...
 
 Demo available at https://carlitoplatanito.com/demo
 
@@ -12,50 +17,92 @@ NIP07 compatible browser plug-in for login.
 
 ## Usage
 
-The script will grab the title & URL from the meta of the page.
+### Web Component (recommended)
 
-Define the authors `pubkey` using the `nostr:pubkey` property and relays as `nostr:relay`.
-
+Place a `<disgus-comments>` element where you want comments to appear:
 
 ```html
-<title>YOUR SITE TITLE</title>
+<disgus-comments
+  pubkey="YOUR_NOSTR_PUBKEY"
+  relays="wss://relay1.com,wss://relay2.com"
+></disgus-comments>
 
-<!-- IF NO CANONICAL IS PROVIDED IT WILL USE THE WEBSITE URL -->
-<link rel="canonical" href="https://your-website.com/blog-post" />
-
-<!-- PROVIDE the pubkey so it can be tagged for responses/alerts -->
-<meta property="nostr:pubkey" content="YOUR_NOSTR_PUB_KEY" />
-
-<!-- CAN provide multiple relays -->
-<meta property="nostr:relay" content="OPTIONAL_NOSTR_RELAY" />
-<meta property="nostr:relay" content="OPTIONAL_NOSTR_RELAY" />
-<!-- CAN provide the exact event_id for the root event to avoid ambuigity -->
-<meta property="nostr:event_id" content="OPTIONAL_IF_NONE_IT_WILL_CREATE_OR_FIND_IT" />
-
-<!-- MUST PROVIDE CSS -->
-<link rel="stylesheet" href="https://unpkg.com/disgus/dist/style.css">
+<script src="https://unpkg.com/disgus" data-disgus></script>
 ```
 
-Add the following where you would like the comments to load up in the body of your page.
+No separate CSS file needed -- styles are bundled inline.
+
+### Single script tag (with data attributes)
+
+Or use a script tag with `data-disgus` and `data-*` attributes. No meta tags
+needed:
 
 ```html
-<!-- div with the ID disgus where you would like to display the comments & form -->
 <div id="disgus"></div>
 
-<!-- this can go at the end of the body -->
-<script type="module" src="https://unpkg.com/disgus/dist/index.js" async></script>
+<script
+  src="https://unpkg.com/disgus"
+  data-disgus
+  data-pubkey="YOUR_NOSTR_PUBKEY"
+  data-relays="wss://relay1.com,wss://relay2.com"
+>
+</script>
 ```
+
+### Legacy (meta tags)
+
+Still works with `<meta>` tags for sites that prefer declarative config in the
+`<head>`:
+
+```html
+<meta property="nostr:pubkey" content="YOUR_NOSTR_PUB_KEY" />
+<meta property="nostr:relay" content="wss://relay1.com" />
+<meta property="nostr:relay" content="wss://relay2.com" />
+
+<div id="disgus"></div>
+
+<script src="https://unpkg.com/disgus"></script>
+```
+
+Config priority: Web Component attributes > `data-*` attributes > meta tags >
+defaults.
 
 ## How it works
 
-Every page/author gets a Nostr note/event created by a random user when posting the first response.
+Every page/author gets a Nostr note/event created by a random user when posting
+the first response.
 
 This event becomes the 'root' note for all the other responses in the thread.
 
-Offers NIP-07 for login or just type a name to post as a **Rando** (non-NIP05 veriefied temp guest like account).
+Offers NIP-07 for login or just type a name to post as a **Rando** (non-NIP05
+verified temp guest account).
 
-> If you have the same relays set on Damus or whatever other Nostr client you will be able to see replies, etc. The 'author' user will get alerts as they are tagged in the root post as well.
+> If you have the same relays set on Damus or whatever other Nostr client you
+> will be able to see replies, etc. The 'author' user will get alerts as they
+> are tagged in the root post as well.
+
+## Configuration
+
+| Option             | Web Component attr                             | data-* attr     | Meta tag                 |
+| ------------------ | ---------------------------------------------- | --------------- | ------------------------ |
+| Pubkey             | `pubkey`                                       | `data-pubkey`   | `nostr:pubkey`           |
+| Relays (comma-sep) | `relays`                                       | `data-relays`   | `nostr:relay` (multiple) |
+| Event ID           | `event-id`                                     | `data-event-id` | `nostr:event_id`         |
+| Canonical URL      | Auto (og:url / link[rel=canonical] / location) |                 | `og:url`                 |
+| Title              | Auto (og:title / document.title)               |                 | `og:title`               |
+
+## Development
+
+```sh
+npm start       # Vite dev server with HMR
+npm run build     # Build for production
+npm run preview   # Serve the built demo via HTTP (open http://localhost:4173)
+```
+
+The demo page at `/dist/index.html` uses the built `<disgus-comments>` web
+component and works from `file://` or any HTTP server.
 
 ## Work In Progress
 
-Lot's of ideas and features coming to this but feel free to open a ticket, pull request or hit me on Nostr (_@carlitoplatanito.com)
+More features coming -- open a ticket, pull request or hit me on Nostr
+(_@carlitoplatanito.com)
