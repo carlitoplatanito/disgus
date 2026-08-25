@@ -1,23 +1,17 @@
-name: Production Deploy
+name: Build It
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    branches: ["main"]
+
 jobs:
   prodDeploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'pnpm'
+          node-version: 24.14.0
       - name: Install Deps
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       - name: Build
-        run: pnpm build
-#      - name: Release
-#        run: yarn version minor && yarn release
+        run: npm run build
