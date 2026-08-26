@@ -56,6 +56,7 @@ export default function CommentForm() {
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Join the discussion"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}
@@ -67,10 +68,10 @@ export default function CommentForm() {
             <div className="bg-gray-100 text-black m-0 px-2 py-1 flex items-center justify-between">
                 {rootEvent
                     ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
-                    : <EllipsisHorizontalCircleIcon width={18} />
+                    : <EllipsisHorizontalCircleIcon width={18} aria-hidden="true" />
                 }
                 {user ?
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="primary" disabled={!comment.trim()}>
                     Comment
                 </Button>:
                 <div className="whitespace-nowrap">
