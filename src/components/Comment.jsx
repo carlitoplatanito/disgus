@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Optimization: Wrap Comment in React.memo.
+ * Prevents re-rendering every comment item when parent state updates
+ * (e.g. typing in CommentForm textarea or toggling user menu).
+ */
+const Comment = memo(function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
@@ -93,4 +98,6 @@ export default function Comment({ comment }) {
             </div>
         </div>
     );
-}
+});
+
+export default Comment;
