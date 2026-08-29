@@ -8,10 +8,10 @@ export default function Button({ children, Component = 'button', variant, classN
 
     switch (variant) {
         case 'primary':
-            classes.push('py-2', 'px-4', 'whitespace-nowrap', 'bg-black', 'text-white', 'font-bold');
+            classes.push('py-2', 'px-4', 'whitespace-nowrap', 'bg-black', 'text-white', 'font-bold', 'disabled:opacity-50', 'disabled:cursor-not-allowed');
             break;
         case 'secondary':
-            classes.push('py-1', 'px-2', 'hover:ring', 'hover:ring-gray-300');
+            classes.push('py-1', 'px-2', 'hover:ring', 'hover:ring-gray-300', 'disabled:opacity-50', 'disabled:cursor-not-allowed');
             break;
         default:
             classes.push('');

@@ -34,7 +34,7 @@ export default function CommentForm() {
 
     return (
         <>
-        <form className="shadow relative appearance-none bg-white rounded" aria-disabled={!user} 
+        <form className="shadow relative appearance-none bg-white rounded"
         onSubmit={async (e) => {
                 e.preventDefault();
                 if (rootEvent) {
@@ -53,6 +53,9 @@ export default function CommentForm() {
             focusTimer.current = setTimeout(() => setFocused(false), 100);
         }}
         >
+            <label htmlFor="comment" className="sr-only">
+                Join the discussion
+            </label>
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
@@ -70,7 +73,7 @@ export default function CommentForm() {
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
                 {user ?
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="primary" disabled={!comment.trim()}>
                     Comment
                 </Button>:
                 <div className="whitespace-nowrap">
