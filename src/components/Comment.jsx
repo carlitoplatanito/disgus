@@ -1,17 +1,21 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
-import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
+import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Memoized Comment component to prevent unnecessary re-renders when parent states change.
+ * Optimizations implemented:
+ * 1. Wrapped in React.memo so typing in CommentForm or changing Root state doesn't re-render unmodified comments.
+ * 2. Derived `parentEvent` directly via `useMemo` instead of setting state in `useEffect` to avoid extra mount-time re-renders.
+ */
+function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
-    const [ formattedContent, setFormattedContent ] = useState();
-    const [ parentEvent, setParentEvent ] = useState();
+    const createdDate = useMemo(() => new Date(created_at * 1000), [created_at]);
 
     useEffect(() => {
         if (!author || author.pubkey !== pubkey) {
@@ -19,36 +23,20 @@ export default function Comment({ comment }) {
                 setAuthor(_user);
             });
         }
+    }, [author, pubkey, config.relays]);
 
-        return;
-    }, [author, pubkey]);
-
-    useEffect(() => {
-        if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
-                }
-            });
-
-            setParentEvent(events[events.length -1]);
+    // Derive parent event synchronously to avoid state update re-render cycle
+    const parentEvent = useMemo(() => {
+        if (!Array.isArray(tags)) return undefined;
+        let lastEvent = undefined;
+        for (let i = 0; i < tags.length; i++) {
+            const t = tags[i];
+            if (t && t[0] === 'e') {
+                lastEvent = t[1];
+            }
         }
-
-        return;
-    }, [parentEvent]);
+        return lastEvent;
+    }, [tags]);
 
     return (
         <div className="p-2 mx-auto">
@@ -94,3 +82,5 @@ export default function Comment({ comment }) {
         </div>
     );
 }
+
+export default memo(Comment);
