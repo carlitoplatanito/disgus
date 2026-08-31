@@ -53,8 +53,11 @@ export default function CommentForm() {
             focusTimer.current = setTimeout(() => setFocused(false), 100);
         }}
         >
+            <label htmlFor="comment" className="sr-only">
+                Add a comment
+            </label>
             <textarea
-                className="w-full p-2 m-0 bg-white text-black focus:outline-none"
+                className="w-full p-2 m-0 bg-white text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-black rounded"
                 id="comment"
                 placeholder="Join the discussion..."
                 value={comment}

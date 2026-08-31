@@ -4,7 +4,7 @@ import { classNames } from '../helpers/utils';
 
 export default function Button({ children, Component = 'button', variant, className, ...props }) {
 
-    let classes = ['rounded'];
+    let classes = ['rounded', 'focus-visible:ring-2', 'focus-visible:ring-black', 'focus-visible:outline-none'];
 
     switch (variant) {
         case 'primary':
