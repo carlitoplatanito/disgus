@@ -56,6 +56,7 @@ export default function CommentForm() {
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Write a comment"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}
@@ -64,11 +65,14 @@ export default function CommentForm() {
                 }}
             />
             {(focused || comment.length > 0) && 
-            <div className="bg-gray-100 text-black m-0 px-2 py-1 flex items-center justify-between">
-                {rootEvent
-                    ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
-                    : <EllipsisHorizontalCircleIcon width={18} />
-                }
+            <div className="bg-gray-100 text-black m-0 px-2 py-1 flex items-center justify-between text-xs sm:text-sm">
+                <div className="flex items-center space-x-2 truncate">
+                    {rootEvent
+                        ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon className="inline-block mr-1" width={18} /> {rootEvent.id}</a>
+                        : <EllipsisHorizontalCircleIcon width={18} />
+                    }
+                    {comment.length > 0 && <span className="text-gray-500 font-mono text-xs">{comment.length} {comment.length === 1 ? 'char' : 'chars'}</span>}
+                </div>
                 {user ?
                 <Button type="submit" variant="primary">
                     Comment

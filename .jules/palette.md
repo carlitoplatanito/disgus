@@ -1,0 +1,3 @@
+## 2025-05-18 - Form Input Accessibility & Real-time Feedback
+**Learning:** Icon-only or implicit form inputs like `<textarea>` without visible `<label>` tags must have an explicit `aria-label` attribute for screen readers. Real-time feedback indicators (like character counts) placed next to submission triggers provide reassuring immediate state context to users without clogging the visual layout.
+**Action:** Always verify `<textarea>` and `<input>` elements in forms possess explicit `aria-label` or `<label htmlFor="...">` attributes, and pair input interactions with subtle inline feedback indicators.
