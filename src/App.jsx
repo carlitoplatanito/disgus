@@ -65,7 +65,11 @@ function CommentList({ comments }) {
   }, [comments]);
 
   if (processedComments.length === 0) {
-    return null;
+    return (
+      <div className="py-8 text-center text-gray-500 text-sm">
+        No comments yet. Be the first to join the discussion!
+      </div>
+    );
   }
 
   return (

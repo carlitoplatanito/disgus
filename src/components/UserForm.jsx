@@ -24,7 +24,7 @@ export default function UserForm() {
                     <Menu.Button className="inline-flex align-center justify-center px-4 py-2">
                         <figure className="avatar placeholder mr-2">
                         {user && user.picture
-                            ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={user.picture} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
+                            ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={user.picture} alt={user.display_name || user.name || user.pubkey} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
                             : <div className="flex items-center justify-center w-6 h-6 ring ring-1 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${user.pubkey ? user.pubkey.substr(0,6) : 'ffffff'}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-md">{user.pubkey ? user.pubkey.substr(0,2) : '?'}</span></div>
                         }
                         </figure>

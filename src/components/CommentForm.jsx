@@ -56,6 +56,7 @@ export default function CommentForm() {
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Join the discussion"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}
@@ -86,7 +87,7 @@ export default function CommentForm() {
         </form>
         <div className="my-3 mx-1">
             <Button variant="secondary" className="hidden mr-2"><BookmarkIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>0</b></Button>
-            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
+            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank" rel="noopener noreferrer"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
         </div>
         </>
     );
