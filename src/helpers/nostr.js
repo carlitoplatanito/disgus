@@ -1,6 +1,24 @@
 import { SimplePool, finalizeEvent, getEventHash, generateSecretKey, getPublicKey } from 'nostr-tools';
 import { hexToBytes, bytesToHex } from 'nostr-passkey';
 
+/**
+ * Deduplicates comments array in O(N) time complexity using a Set.
+ * Avoids quadratic O(N²) array filter + findIndex overhead.
+ */
+export const deduplicateComments = (items) => {
+  if (!Array.isArray(items)) return [];
+  const seen = new Set();
+  const result = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item && item.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+};
+
 export const getComments = (config, rootEvent, force) => new Promise((resolve) => {
   const { relays } = config;
   const pool = new SimplePool();
@@ -34,9 +52,8 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
     oneose() {
       if (returned) return;
 
-      const _comments = comments.filter((value, index, self) =>
-        index === self.findIndex((t) => t.id === value.id)
-      );
+      // O(N) deduplication using Set instead of O(N²) filter + findIndex
+      const _comments = deduplicateComments(comments);
       const now = Math.floor(Date.now() / 1000);
 
       if (!cached?.updated_at || cached?.updated_at < now) {
