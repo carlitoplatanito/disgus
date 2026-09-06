@@ -55,8 +55,8 @@ export default function Comment({ comment }) {
             <div className={`flex items-top justify-between ${parentEvent !== rootEvent.id ? 'ml-14 sm:ml-20' : ''}`}>
                 <figure className="w-12 sm:w-16 avatar mr-4 flex-basis" style={{flexGrow: 0, flexShrink: 0}}>
                     {author && author.picture
-                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
-                        : <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 ring ring-2 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-3xl">{pubkey.substr(0,2)}</span></div>
+                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} alt={`${author.display_name || author.name || pubkey}'s avatar`} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
+                        : <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 ring ring-2 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0, verticalAlign: 'center'}} aria-label={`${pubkey}'s avatar`}><span className="text-3xl">{pubkey.substr(0,2)}</span></div>
                     }
                 </figure>
                 <div className="flex-grow flex-shrink overflow-hidden">
@@ -76,7 +76,9 @@ export default function Comment({ comment }) {
                         </div>
                         <div className="flex-basis ml-2 text-right">
                             <MinusIcon className="w-6 h-6 hidden inline-block" />
-                            <EllipsisHorizontalIcon className="w-6 h-6 inline-block" />
+                            <button type="button" aria-label="Comment options" className="text-gray-600 hover:text-black focus:outline-none focus:ring-2 focus:ring-black rounded">
+                                <EllipsisHorizontalIcon className="w-6 h-6 inline-block" />
+                            </button>
                         </div>
                     </div>
                     <div className="mt-2 text-md">
