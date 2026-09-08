@@ -34,7 +34,7 @@ export default function CommentForm() {
 
     return (
         <>
-        <form className="shadow relative appearance-none bg-white rounded" aria-disabled={!user} 
+        <form className="shadow relative appearance-none bg-white rounded"
         onSubmit={async (e) => {
                 e.preventDefault();
                 if (rootEvent) {
@@ -54,8 +54,9 @@ export default function CommentForm() {
         }}
         >
             <textarea
-                className="w-full p-2 m-0 bg-white text-black focus:outline-none"
+                className="w-full p-2 m-0 bg-white text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-inset rounded"
                 id="comment"
+                aria-label="Write a comment"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}
@@ -66,11 +67,11 @@ export default function CommentForm() {
             {(focused || comment.length > 0) && 
             <div className="bg-gray-100 text-black m-0 px-2 py-1 flex items-center justify-between">
                 {rootEvent
-                    ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
+                    ? <a className="block whitespace-nowrap truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
                 {user ?
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="primary" disabled={!comment.trim()}>
                     Comment
                 </Button>:
                 <div className="whitespace-nowrap">
@@ -86,7 +87,7 @@ export default function CommentForm() {
         </form>
         <div className="my-3 mx-1">
             <Button variant="secondary" className="hidden mr-2"><BookmarkIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>0</b></Button>
-            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
+            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
         </div>
         </>
     );
