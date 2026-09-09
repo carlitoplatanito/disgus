@@ -1,17 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Bolt Optimizations:
+ * 1. React.memo prevents re-rendering unchanged comments when parent state/context updates.
+ * 2. Synchronously derive `parentEvent` from `tags` via useMemo instead of useEffect + setState,
+ *    eliminating the redundant second render pass on mount for every comment.
+ * 3. Memoize `createdDate` calculation.
+ */
+function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
-    const [ formattedContent, setFormattedContent ] = useState();
-    const [ parentEvent, setParentEvent ] = useState();
+    const createdDate = useMemo(() => new Date(created_at * 1000), [created_at]);
+
+    // Derive parentEvent synchronously from tags
+    const parentEvent = useMemo(() => {
+        if (!Array.isArray(tags)) return undefined;
+        for (let i = tags.length - 1; i >= 0; i--) {
+            if (tags[i] && tags[i][0] === 'e') {
+                return tags[i][1];
+            }
+        }
+        return undefined;
+    }, [tags]);
 
     useEffect(() => {
         if (!author || author.pubkey !== pubkey) {
@@ -19,36 +35,7 @@ export default function Comment({ comment }) {
                 setAuthor(_user);
             });
         }
-
-        return;
-    }, [author, pubkey]);
-
-    useEffect(() => {
-        if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
-                }
-            });
-
-            setParentEvent(events[events.length -1]);
-        }
-
-        return;
-    }, [parentEvent]);
+    }, [author, pubkey, config.relays]);
 
     return (
         <div className="p-2 mx-auto">
@@ -94,3 +81,5 @@ export default function Comment({ comment }) {
         </div>
     );
 }
+
+export default memo(Comment);
