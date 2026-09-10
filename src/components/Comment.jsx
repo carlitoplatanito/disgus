@@ -55,7 +55,7 @@ export default function Comment({ comment }) {
             <div className={`flex items-top justify-between ${parentEvent !== rootEvent.id ? 'ml-14 sm:ml-20' : ''}`}>
                 <figure className="w-12 sm:w-16 avatar mr-4 flex-basis" style={{flexGrow: 0, flexShrink: 0}}>
                     {author && author.picture
-                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
+                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} alt={author.display_name || author.name || pubkey || 'Commenter avatar'} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
                         : <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 ring ring-2 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-3xl">{pubkey.substr(0,2)}</span></div>
                     }
                 </figure>
@@ -63,20 +63,20 @@ export default function Comment({ comment }) {
                     <div className="flex items-top justify-between">
                         <div className="flex-shrink flex-grow overflow-hidden">
                             <a href={`nostr:p:${pubkey}`} title={pubkey} className="text-lg block truncate">
-                                {parentEvent !== rootEvent.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" /> : ''}
+                                {parentEvent !== rootEvent.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" aria-hidden="true" /> : ''}
                                 <b>{ author.display_name || author.name || pubkey }</b>
                                 { author.nip05 
-                                    ? <abbr title={author.nip05.replace('_@', '@')}><CheckBadgeIcon color="purple" className="-mt-1 mx-1 w-4 h-4 inline-block" /></abbr>
-                                    : <abbr className="opacity-70" title={`Rando ${pubkey}`}><ShieldExclamationIcon className="-mt-1 mx-1 w-4 h-4 inline-block" /></abbr>
+                                    ? <abbr title={author.nip05.replace('_@', '@')}><CheckBadgeIcon color="purple" className="-mt-1 mx-1 w-4 h-4 inline-block" aria-hidden="true" /></abbr>
+                                    : <abbr className="opacity-70" title={`Rando ${pubkey}`}><ShieldExclamationIcon className="-mt-1 mx-1 w-4 h-4 inline-block" aria-hidden="true" /></abbr>
                                 }
                             </a>
                             <a href={`nostr:e:${id}`} title={id} className="text-xs block whitespace-nowrap truncate opacity-70">
-                                <time dateTime={createdDate.toISOString()}><ClockIcon className="w-3 h-3 inline" /> {formatDate(createdDate)}</time>
+                                <time dateTime={createdDate.toISOString()}><ClockIcon className="w-3 h-3 inline" aria-hidden="true" /> {formatDate(createdDate)}</time>
                             </a>
                         </div>
                         <div className="flex-basis ml-2 text-right">
-                            <MinusIcon className="w-6 h-6 hidden inline-block" />
-                            <EllipsisHorizontalIcon className="w-6 h-6 inline-block" />
+                            <MinusIcon className="w-6 h-6 hidden inline-block" aria-hidden="true" />
+                            <EllipsisHorizontalIcon className="w-6 h-6 inline-block" aria-hidden="true" />
                         </div>
                     </div>
                     <div className="mt-2 text-md">

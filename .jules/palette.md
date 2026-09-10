@@ -1,0 +1,3 @@
+## 2025-05-20 - Accessible Form Controls & Focus Ring Polish
+**Learning:** Icon-only and embedded decorative SVG icons in component buttons/forms often lack proper `aria-hidden` attributes or accessible labels, causing screen readers to announce unhelpful icon text or skip key context. Moreover, custom Tailwind buttons need explicit `focus-visible` ring utilities so keyboard tab navigation remains clear without altering mouse hover states.
+**Action:** Always add `aria-hidden="true"` to decorative icons, `aria-label` to form textareas without visible `<label>`, and `focus-visible:ring-2` to custom button elements.
