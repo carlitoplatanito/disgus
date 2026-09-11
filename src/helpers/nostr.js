@@ -1,6 +1,23 @@
 import { SimplePool, finalizeEvent, getEventHash, generateSecretKey, getPublicKey } from 'nostr-tools';
 import { hexToBytes, bytesToHex } from 'nostr-passkey';
 
+/**
+ * Deduplicate comments in O(N) linear time using Set lookup.
+ */
+export function deduplicateComments(comments) {
+  if (!Array.isArray(comments)) return [];
+  const seen = new Set();
+  const _comments = [];
+  for (let i = 0; i < comments.length; i++) {
+    const item = comments[i];
+    if (item && item.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      _comments.push(item);
+    }
+  }
+  return _comments;
+}
+
 export const getComments = (config, rootEvent, force) => new Promise((resolve) => {
   const { relays } = config;
   const pool = new SimplePool();
@@ -34,9 +51,7 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
     oneose() {
       if (returned) return;
 
-      const _comments = comments.filter((value, index, self) =>
-        index === self.findIndex((t) => t.id === value.id)
-      );
+      const _comments = deduplicateComments(comments);
       const now = Math.floor(Date.now() / 1000);
 
       if (!cached?.updated_at || cached?.updated_at < now) {
