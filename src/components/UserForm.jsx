@@ -21,7 +21,7 @@ export default function UserForm() {
             </div>
             <Menu as="div" className="relative block text-right">
                 <div>
-                    <Menu.Button className="inline-flex align-center justify-center px-4 py-2">
+                    <Menu.Button className="inline-flex align-center justify-center px-4 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-1">
                         <figure className="avatar placeholder mr-2">
                         {user && user.picture
                             ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={user.picture} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
