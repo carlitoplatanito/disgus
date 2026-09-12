@@ -10,6 +10,7 @@ export default function CommentForm() {
     const { pubkey, relays } = config;
     const [ comment, setComment ] = useState('');
     const [ focused, setFocused ] = useState(false);
+    const [ isSubmitting, setIsSubmitting ] = useState(false);
     const { user, signIn, signInRandom } = useUser();
     const focusTimer = useRef();
     
@@ -20,15 +21,19 @@ export default function CommentForm() {
         }
         tags.push(['client', 'Disgus']);
 
-        if (comment.length > 0) {
-            postComment({
-                pubkey: user.pubkey,
-                content: comment,
-                tags
-            }, user, relays).then(() => {
+        if (comment.trim().length > 0) {
+            setIsSubmitting(true);
+            try {
+                await postComment({
+                    pubkey: user.pubkey,
+                    content: comment,
+                    tags
+                }, user, relays);
                 setComment('');
                 refreshComments();
-            });
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     }
 
@@ -56,6 +61,7 @@ export default function CommentForm() {
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Write a comment"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}
@@ -70,8 +76,8 @@ export default function CommentForm() {
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
                 {user ?
-                <Button type="submit" variant="primary">
-                    Comment
+                <Button type="submit" variant="primary" disabled={!comment.trim() || isSubmitting}>
+                    {isSubmitting ? 'Posting...' : 'Comment'}
                 </Button>:
                 <div className="whitespace-nowrap">
                     <Button type="button" variant="primary" className="mr-2" key="plugin" onClick={(e) => { e.preventDefault(); signIn(); }}>
