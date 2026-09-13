@@ -1,54 +1,50 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Optimized Comment component.
+ * Optimizations:
+ * 1. Wrapped in React.memo to prevent unnecessary re-renders of existing comments when parent state updates.
+ * 2. Synchronously derived parentEvent via useMemo instead of useState + useEffect to eliminate initial mount double-rendering.
+ * 3. Memoized createdDate to avoid allocating Date instances on every render.
+ * 4. Optimized getPubkey useEffect dependency array to avoid re-triggering effect on author state changes.
+ */
+function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
-    const [ formattedContent, setFormattedContent ] = useState();
-    const [ parentEvent, setParentEvent ] = useState();
+
+    // Memoize createdDate to avoid creating a new Date instance on every render
+    const createdDate = useMemo(() => new Date(created_at * 1000), [created_at]);
+
+    // Synchronously derive parentEvent from tags to avoid state + useEffect double-render on mount
+    const parentEvent = useMemo(() => {
+        if (!Array.isArray(tags)) return undefined;
+        for (let i = tags.length - 1; i >= 0; i--) {
+            if (tags[i] && tags[i][0] === 'e') {
+                return tags[i][1];
+            }
+        }
+        return undefined;
+    }, [tags]);
 
     useEffect(() => {
+        let isMounted = true;
         if (!author || author.pubkey !== pubkey) {
             getPubkey(pubkey, config.relays).then((_user) => {
-                setAuthor(_user);
-            });
-        }
-
-        return;
-    }, [author, pubkey]);
-
-    useEffect(() => {
-        if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
+                if (isMounted) {
+                    setAuthor(_user);
                 }
             });
-
-            setParentEvent(events[events.length -1]);
         }
-
-        return;
-    }, [parentEvent]);
+        return () => {
+            isMounted = false;
+        };
+    }, [pubkey, config.relays]);
 
     return (
         <div className="p-2 mx-auto">
@@ -94,3 +90,5 @@ export default function Comment({ comment }) {
         </div>
     );
 }
+
+export default memo(Comment);
