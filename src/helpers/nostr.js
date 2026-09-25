@@ -34,9 +34,16 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
     oneose() {
       if (returned) return;
 
-      const _comments = comments.filter((value, index, self) =>
-        index === self.findIndex((t) => t.id === value.id)
-      );
+      // O(N) deduplication using Set instead of O(N²) filter + findIndex
+      const seen = new Set();
+      const _comments = [];
+      for (let i = 0; i < comments.length; i++) {
+        const item = comments[i];
+        if (item && item.id && !seen.has(item.id)) {
+          seen.add(item.id);
+          _comments.push(item);
+        }
+      }
       const now = Math.floor(Date.now() / 1000);
 
       if (!cached?.updated_at || cached?.updated_at < now) {
@@ -55,15 +62,27 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
   });
 });
 
+const pubkeyCache = new Map();
+
 export const getPubkey = (pubkey, relays) => new Promise((resolve) => {
+  if (pubkeyCache.has(pubkey)) {
+    resolve(pubkeyCache.get(pubkey));
+    return;
+  }
+
   let user = { pubkey, created_at: 0 };
   let returned = false;
 
   if (localStorage.getItem(`p:${pubkey}`)) {
-    user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
-    if (user.created_at > 0) {
-      resolve(user);
-      return;
+    try {
+      user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
+      if (user.created_at > 0) {
+        pubkeyCache.set(pubkey, user);
+        resolve(user);
+        return;
+      }
+    } catch (e) {
+      // ignore JSON parse error
     }
   }
 
@@ -81,6 +100,7 @@ export const getPubkey = (pubkey, relays) => new Promise((resolve) => {
             ...JSON.parse(_event.content),
             created_at: _event.created_at
           };
+          pubkeyCache.set(pubkey, user);
           localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
           resolve(user);
           returned = true;
