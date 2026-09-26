@@ -1,0 +1,3 @@
+## 2025-05-18 - Accessibility in Custom Web Component Commenting UI
+**Learning:** Embedded web components (like Disgus comments) often omit form labels (`aria-label` or `<label>`) and image `alt` attributes, making them inaccessible to screen reader users. Additionally, submit buttons should visually and functionally reflect disabled state when inputs are empty (`disabled:opacity-50 disabled:cursor-not-allowed`).
+**Action:** Ensure all interactive form inputs in web components have accessible names via `aria-label` or `<label>`, supply fallback `alt` text for dynamically fetched user avatars, and add proper disabled states on action buttons.

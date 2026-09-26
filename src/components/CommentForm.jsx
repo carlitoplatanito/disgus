@@ -34,7 +34,7 @@ export default function CommentForm() {
 
     return (
         <>
-        <form className="shadow relative appearance-none bg-white rounded" aria-disabled={!user} 
+        <form className="shadow relative appearance-none bg-white rounded"
         onSubmit={async (e) => {
                 e.preventDefault();
                 if (rootEvent) {
@@ -57,6 +57,7 @@ export default function CommentForm() {
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
                 placeholder="Join the discussion..."
+                aria-label="Join the discussion"
                 value={comment}
                 rows={3}
                 onChange={(e) => {
@@ -70,7 +71,7 @@ export default function CommentForm() {
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
                 {user ?
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="primary" disabled={!comment.trim()}>
                     Comment
                 </Button>:
                 <div className="whitespace-nowrap">
