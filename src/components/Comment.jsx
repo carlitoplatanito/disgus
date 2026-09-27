@@ -1,54 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+// Memoized Comment component to prevent unnecessary re-renders when parent state changes
+const Comment = memo(function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
-    const [ formattedContent, setFormattedContent ] = useState();
-    const [ parentEvent, setParentEvent ] = useState();
+    const createdDate = useMemo(() => new Date(created_at * 1000), [created_at]);
+
+    // Directly derive parentEvent ID using useMemo to eliminate double-render frame and UI flash on mount
+    const parentEvent = useMemo(() => {
+        if (!tags || !Array.isArray(tags)) return null;
+        for (let i = tags.length - 1; i >= 0; i--) {
+            if (tags[i] && tags[i][0] === 'e') {
+                return tags[i][1];
+            }
+        }
+        return null;
+    }, [tags]);
 
     useEffect(() => {
+        let isMounted = true;
         if (!author || author.pubkey !== pubkey) {
             getPubkey(pubkey, config.relays).then((_user) => {
-                setAuthor(_user);
-            });
-        }
-
-        return;
-    }, [author, pubkey]);
-
-    useEffect(() => {
-        if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
+                if (isMounted && _user) {
+                    setAuthor(_user);
                 }
             });
-
-            setParentEvent(events[events.length -1]);
         }
 
-        return;
-    }, [parentEvent]);
+        return () => {
+            isMounted = false;
+        };
+    }, [pubkey, config.relays]);
 
     return (
         <div className="p-2 mx-auto">
@@ -93,4 +81,6 @@ export default function Comment({ comment }) {
             </div>
         </div>
     );
-}
+});
+
+export default Comment;
