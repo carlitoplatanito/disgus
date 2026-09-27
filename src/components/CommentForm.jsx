@@ -56,6 +56,7 @@ export default function CommentForm() {
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Write a comment"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}

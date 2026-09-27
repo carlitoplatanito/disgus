@@ -1,0 +1,3 @@
+## 2025-03-30 - User Avatars & Comment Inputs Missing Accessibility Attributes
+**Learning:** In comment widgets like Disgus, avatar images rendered inside comment feeds and user drop-down forms often omit `alt` text, and textareas omit explicit `aria-label` attributes. Providing descriptive fallback `alt` attributes (`author.display_name || author.name || author.pubkey`) and explicit `aria-label` on form inputs improves screen reader accessibility without layout distortion.
+**Action:** Ensure all avatar `<img>` tags have fallback name/pubkey `alt` text and interactive input areas have explicit `aria-label` or `aria-labelledby`.
