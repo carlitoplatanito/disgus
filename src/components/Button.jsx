@@ -4,11 +4,11 @@ import { classNames } from '../helpers/utils';
 
 export default function Button({ children, Component = 'button', variant, className, ...props }) {
 
-    let classes = ['rounded'];
+    let classes = ['rounded', 'focus-visible:ring-2', 'focus-visible:ring-offset-2', 'focus-visible:ring-black', 'focus:outline-none'];
 
     switch (variant) {
         case 'primary':
-            classes.push('py-2', 'px-4', 'whitespace-nowrap', 'bg-black', 'text-white', 'font-bold');
+            classes.push('py-2', 'px-4', 'whitespace-nowrap', 'bg-black', 'text-white', 'font-bold', 'disabled:opacity-50', 'disabled:cursor-not-allowed');
             break;
         case 'secondary':
             classes.push('py-1', 'px-2', 'hover:ring', 'hover:ring-gray-300');
