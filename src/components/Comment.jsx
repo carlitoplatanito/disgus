@@ -1,58 +1,57 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { formatDate } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline'
 import { useRoot } from '../context/root';
 
-export default function Comment({ comment }) {
+/**
+ * Optimized Comment component.
+ * Optimizations:
+ * 1. Memoized with React.memo to prevent unnecessary re-renders when parent re-renders.
+ * 2. Synchronous derivation of `parentEvent` via useMemo instead of useState+useEffect state updates on mount.
+ * 3. Fixed author fetch effect dependencies to avoid repeated trigger cycles when author updates.
+ * 4. Memoized Date formatting and ISO string calculations to avoid Date object churn on render frames.
+ */
+function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
     const [ author, setAuthor ] = useState(false);
-    const createdDate = new Date(created_at * 1000);
-    const [ formattedContent, setFormattedContent ] = useState();
-    const [ parentEvent, setParentEvent ] = useState();
+
+    const { isoDate, formattedDate } = useMemo(() => {
+        const d = new Date(created_at * 1000);
+        return {
+            isoDate: d.toISOString(),
+            formattedDate: formatDate(d),
+        };
+    }, [created_at]);
+
+    // O(T) reverse lookup for parent event without array allocations or useEffect re-render
+    const parentEvent = useMemo(() => {
+        if (!Array.isArray(tags)) return undefined;
+        for (let i = tags.length - 1; i >= 0; i--) {
+            if (tags[i] && tags[i][0] === 'e') {
+                return tags[i][1];
+            }
+        }
+        return undefined;
+    }, [tags]);
 
     useEffect(() => {
-        if (!author || author.pubkey !== pubkey) {
-            getPubkey(pubkey, config.relays).then((_user) => {
+        let isMounted = true;
+        getPubkey(pubkey, config.relays).then((_user) => {
+            if (isMounted && _user) {
                 setAuthor(_user);
-            });
-        }
-
-        return;
-    }, [author, pubkey]);
-
-    useEffect(() => {
-        if (!parentEvent) {
-            const events = [];
-            const pubkeys = [];
-            let _content = content;
-            
-            tags.forEach((t, i) => {
-                _content = _content.replace(`#[${i}]`, `<a href="#${t[0]}:${t[1]}">@${t[1]}</a>`);
-
-                switch (t[0]) {
-                    case 'e':
-                        events.push(t[1]);
-                        break;
-                    case 'p':
-                        pubkeys.push(t[1]);
-                        break;
-                    default:
-                        break;
-                }
-            });
-
-            setParentEvent(events[events.length -1]);
-        }
-
-        return;
-    }, [parentEvent]);
+            }
+        });
+        return () => {
+            isMounted = false;
+        };
+    }, [pubkey, config.relays]);
 
     return (
         <div className="p-2 mx-auto">
-            <div className={`flex items-top justify-between ${parentEvent !== rootEvent.id ? 'ml-14 sm:ml-20' : ''}`}>
+            <div className={`flex items-top justify-between ${parentEvent !== rootEvent?.id ? 'ml-14 sm:ml-20' : ''}`}>
                 <figure className="w-12 sm:w-16 avatar mr-4 flex-basis" style={{flexGrow: 0, flexShrink: 0}}>
                     {author && author.picture
                         ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
@@ -63,7 +62,7 @@ export default function Comment({ comment }) {
                     <div className="flex items-top justify-between">
                         <div className="flex-shrink flex-grow overflow-hidden">
                             <a href={`nostr:p:${pubkey}`} title={pubkey} className="text-lg block truncate">
-                                {parentEvent !== rootEvent.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" /> : ''}
+                                {parentEvent !== rootEvent?.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" /> : ''}
                                 <b>{ author.display_name || author.name || pubkey }</b>
                                 { author.nip05 
                                     ? <abbr title={author.nip05.replace('_@', '@')}><CheckBadgeIcon color="purple" className="-mt-1 mx-1 w-4 h-4 inline-block" /></abbr>
@@ -71,7 +70,7 @@ export default function Comment({ comment }) {
                                 }
                             </a>
                             <a href={`nostr:e:${id}`} title={id} className="text-xs block whitespace-nowrap truncate opacity-70">
-                                <time dateTime={createdDate.toISOString()}><ClockIcon className="w-3 h-3 inline" /> {formatDate(createdDate)}</time>
+                                <time dateTime={isoDate}><ClockIcon className="w-3 h-3 inline" /> {formattedDate}</time>
                             </a>
                         </div>
                         <div className="flex-basis ml-2 text-right">
@@ -94,3 +93,5 @@ export default function Comment({ comment }) {
         </div>
     );
 }
+
+export default memo(Comment);
