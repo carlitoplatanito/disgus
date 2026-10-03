@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { relayInit, getEventHash, getBlankEvent, generatePrivateKey, getPublicKey, signEvent } from 'nostr-tools';
-import { initPool, getRootEvent, createRootEvent, getComments } from '../helpers/nostr';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { getRootEvent, createRootEvent, getComments } from '../helpers/nostr';
 
 export const RootContext = React.createContext({});
 
@@ -9,16 +8,15 @@ export const RootProvider = ({ config, children }) => {
     const [comments, setComments] = useState(false);
 
     useEffect(() => {
-        if (!rootEvent) {
-            getRootEvent(config).then((_event) => {
+        getRootEvent(config).then((_event) => {
+            if (_event) {
                 setRootEvent(_event);
-            });
-        } else {
-            getComments(config, rootEvent).then((_comments) => {
-                setComments(_comments);
-            });
-        }
-    }, [rootEvent]);
+                getComments(config, _event).then((_comments) => {
+                    setComments(_comments);
+                });
+            }
+        });
+    }, []);
 
     return <RootContext.Provider value={{ config, rootEvent, setRootEvent, comments, setComments }}>{children}</RootContext.Provider>;
 }
@@ -27,16 +25,21 @@ export const RootConsumer = RootContext.Consumer;
 
 export function useRoot() {
     const { config, rootEvent, setRootEvent, comments, setComments } = useContext(RootContext);
+    const rootEventRef = useRef(rootEvent);
+    rootEventRef.current = rootEvent;
 
     const createRoot = () => new Promise((resolve, reject) => {
         createRootEvent(config).then((_event) => {
             setRootEvent(_event);
+            rootEventRef.current = _event;
             resolve(_event);
         })
     });
 
     const refreshComments = () => {
-        getComments(config, rootEvent, true).then((_comments) => {
+        const root = rootEventRef.current;
+        if (!root) return;
+        getComments(config, root, true).then((_comments) => {
             setComments(_comments);
         });
     };

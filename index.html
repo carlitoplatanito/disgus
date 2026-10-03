@@ -7,19 +7,11 @@
     <title>🤮 Disgus</title>
     <meta property="description" content="Like Disqus, but Nostier." />
 
-    <!-- SHOULD provide a canonical URL -->
     <link rel="canonical" href="https://carlitoplatanito.com/demo" />
 
-    <!-- CAN provide OpenGraph data to override page defaults -->
     <meta property="og:title" content="🤮 Disgus (Disqus but Nostier)" />
     <meta property="og:url" content="https://carlitoplatanito.com/demo" />
     <meta property="og:image" content="https://avatars.githubusercontent.com/u/137208" />
-
-    <!-- MUST provide nostr pubkey for admin/mod and relay -->
-    <meta property="nostr:pubkey" content="b7c1a5ef7ccf5cfd5976fba251116ed3f3ae3d3ed175a9ce5e3d33a890b4684b" />
-    <meta property="nostr:relay" content="wss://brb.io" />
-    <meta property="nostr:relay" content="wss://relay.damus.io" />
-    <meta property="nostr:relay" content="wss://relay.nostr.bg" />
 
     <style>
       body {
@@ -30,7 +22,13 @@
   </head>
   <body>
     <h1>Demo Page</h1>
-    <div id="disgus"></div>
-    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Web Component (recommended) -->
+    <disgus-comments
+      pubkey="b7c1a5ef7ccf5cfd5976fba251116ed3f3ae3d3ed175a9ce5e3d33a890b4684b"
+      relays="wss://brb.io,wss://relay.damus.io,wss://relay.nostr.bg"
+    ></disgus-comments>
+
+    <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>

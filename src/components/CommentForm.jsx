@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { postComment } from '../helpers/nostr';
-import { EllipsisHorizontalCircleIcon, InformationCircleIcon, PencilSquareIcon, BookmarkIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalCircleIcon, PencilSquareIcon, BookmarkIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
 import Button from './Button';
@@ -11,6 +11,7 @@ export default function CommentForm() {
     const [ comment, setComment ] = useState('');
     const [ focused, setFocused ] = useState(false);
     const { user, signIn, signInRandom } = useUser();
+    const focusTimer = useRef();
     
     const createComment = async (rootEventId) => {
         const tags = [['e', rootEventId, relays[0], 'root']];
@@ -31,8 +32,6 @@ export default function CommentForm() {
         }
     }
 
-    let focusTimer = setTimeout(()=>{}, 0);
-
     return (
         <>
         <form className="shadow relative appearance-none bg-white rounded" aria-disabled={!user} 
@@ -47,11 +46,11 @@ export default function CommentForm() {
                 }
         }}
         onFocus={(e) => {
-            clearTimeout(focusTimer);
+            clearTimeout(focusTimer.current);
             setFocused(true);
         }}
         onBlur={(e) => {
-            focusTimer = setTimeout(() => setFocused(false), 100);
+            focusTimer.current = setTimeout(() => setFocused(false), 100);
         }}
         >
             <textarea
@@ -60,7 +59,7 @@ export default function CommentForm() {
                 aria-label="Add a comment"
                 placeholder="Join the discussion..."
                 value={comment}
-                rows={focused || comment.length > 0 ? 3 : 1}
+                rows={3}
                 onChange={(e) => {
                     setComment(e.target.value);
                 }}

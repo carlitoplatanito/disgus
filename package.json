@@ -1,25 +1,27 @@
 {
   "name": "disgus",
-  "version": "0.0.1-alpha.20",
-  "license": "Unlicense",
-  "author": {
-    "name": "Carlito Platanito",
-    "email": "carlitoplatanito@gmail.com",
-    "url": "https://carlitoplatanito.com"
-  },
+  "version": "0.1.6",
+  "license": "GPL-2.0-or-later",
+  "author": "Carlito Platanito <carlito@cloutops.com>",
+  "contributors": [
+    {
+      "name": "0xx0lostcause0xx0"
+    }
+  ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "repository": {
-    "url": "https://github.com/carlitoplatanito/disgus.git"
+    "url": "git+https://github.com/carlitoplatanito/disgus.git"
   },
-  "homepage": "https://carlitoplatanito.com/demo",
-  "main": "dist/index.html",
+  "homepage": "https://github.com/carlitoplatanito/disgus",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "build": "vite build",
-    "prepack": "yarn build"
+    "preview": "vite preview",
+    "prepare": "npm run build"
   },
   "files": [
     "dist"
@@ -27,17 +29,22 @@
   "dependencies": {
     "@headlessui/react": "^1.7.7",
     "@heroicons/react": "^2.0.13",
-    "nostr-tools": "^1.1.0",
+    "nostr-passkey": "^0.3.0",
+    "nostr-tools": "^2.23.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
-    "@vitejs/plugin-react": "^3.0.0",
+    "@vitejs/plugin-react": "^6.1.0",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.2.4",
-    "vite": "^4.0.5"
+    "vite": "^8.2.2"
+  },
+  "allowScripts": {
+    "esbuild@0.18.20": true,
+    "fsevents@2.3.3": true
   }
 }

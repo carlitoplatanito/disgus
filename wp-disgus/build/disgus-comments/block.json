@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "disgus/comments",
+	"version": "0.1.0",
+	"title": "Disgus Comments",
+	"category": "widgets",
+	"icon": "admin-comments",
+	"description": "Embed Nostr-powered comments on your page.",
+	"keywords": [ "comments", "nostr", "disqus" ],
+	"supports": {
+		"html": false,
+		"align": false
+	},
+	"attributes": {
+		"pubkey": {
+			"type": "string"
+		},
+		"relays": {
+			"type": "string"
+		},
+		"eventId": {
+			"type": "string"
+		}
+	},
+	"textdomain": "disgus",
+	"render": "file:./render.php",
+	"editorScript": "file:./index.js"
+}
