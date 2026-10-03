@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { postComment } from '../helpers/nostr';
-import { EllipsisHorizontalCircleIcon, PencilSquareIcon, BookmarkIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalCircleIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
 import Button from './Button';
@@ -85,10 +85,6 @@ export default function CommentForm() {
                 }
             </div>}
         </form>
-        <div className="my-3 mx-1">
-            <Button variant="secondary" className="hidden mr-2"><BookmarkIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>0</b></Button>
-            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank" aria-label="Share page on Facebook"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
-        </div>
         </>
     );
 }
