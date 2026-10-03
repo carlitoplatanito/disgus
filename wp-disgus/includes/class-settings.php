@@ -119,6 +119,14 @@ class Settings {
 			'disgus_behaviour'
 		);
 
+		add_settings_field(
+			'disable_guest',
+			__( 'Disable Random Guest', 'disgus' ),
+			array( $this, 'render_field_disable_guest' ),
+			self::MENU_SLUG,
+			'disgus_behaviour'
+		);
+
 		add_settings_section(
 			'disgus_advanced',
 			__( 'Advanced', 'disgus' ),
@@ -162,6 +170,7 @@ class Settings {
 		}
 
 		$settings['replace_comments'] = isset( $input['replace_comments'] ) ? 1 : 0;
+		$settings['disable_guest']    = isset( $input['disable_guest'] ) ? 1 : 0;
 
 		if ( isset( $input['script_url'] ) ) {
 			$settings['script_url'] = esc_url_raw( $input['script_url'] );
@@ -266,6 +275,28 @@ class Settings {
 				<?php checked( 1, $settings['replace_comments'] ); ?>
 			/>
 			<?php esc_html_e( 'Replace the default WordPress comment form with Disgus on posts and pages.', 'disgus' ); ?>
+		</label>
+		<?php
+	}
+
+	/**
+	 * Render the disable_guest checkbox.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function render_field_disable_guest() {
+		$settings = \disgus_get_settings();
+		?>
+		<label for="disgus-disable-guest">
+			<input
+				type="checkbox"
+				id="disgus-disable-guest"
+				name="disgus_settings[disable_guest]"
+				value="1"
+				<?php checked( 1, $settings['disable_guest'] ); ?>
+			/>
+			<?php esc_html_e( 'Disallow random guest login and require user authentication.', 'disgus' ); ?>
 		</label>
 		<?php
 	}

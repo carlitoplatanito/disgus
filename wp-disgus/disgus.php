@@ -58,6 +58,7 @@ function disgus_get_settings() {
 			'pubkey'           => '',
 			'relays'           => "wss://brb.io\nwss://relay.damus.io",
 			'event_id'         => '',
+			'disable_guest'    => 0,
 			'replace_comments' => 1,
 			'script_url'       => DISGUS_SCRIPT_URL,
 		)

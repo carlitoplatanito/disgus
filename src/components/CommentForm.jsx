@@ -10,7 +10,7 @@ export default function CommentForm() {
     const { pubkey, relays } = config;
     const [ comment, setComment ] = useState('');
     const [ focused, setFocused ] = useState(false);
-    const { user, signIn, signInRandom } = useUser();
+    const { user, signInExtension, signInRandom } = useUser();
     const focusTimer = useRef();
     
     const createComment = async (rootEventId) => {
@@ -70,19 +70,22 @@ export default function CommentForm() {
                     ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
-                {user ?
+                {user ? (
                 <Button type="submit" variant="primary">
                     Comment
-                </Button>:
+                </Button>
+                ) : (
                 <div className="whitespace-nowrap">
-                    <Button type="button" variant="primary" className="mr-2" key="plugin" onClick={(e) => { e.preventDefault(); signIn(); }}>
+                    <Button type="button" variant="primary" className={config?.disable_guest ? "" : "mr-2"} key="plugin" onClick={(e) => { e.preventDefault(); signInExtension(); }}>
                         Sign In
                     </Button>
+                    {!config?.disable_guest && (
                     <Button type="button" variant="primary" key="random" onClick={(e) => { e.preventDefault(); signInRandom(); }}>
                         Random Guest
                     </Button>
+                    )}
                 </div>
-                }
+                )}
             </div>}
         </form>
         </>

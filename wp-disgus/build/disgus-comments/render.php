@@ -9,15 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$pubkey   = isset( $attributes['pubkey'] ) ? $attributes['pubkey'] : '';
-$relays   = isset( $attributes['relays'] ) ? $attributes['relays'] : '';
-$event_id = isset( $attributes['eventId'] ) ? $attributes['eventId'] : '';
+$pubkey        = isset( $attributes['pubkey'] ) ? $attributes['pubkey'] : '';
+$relays        = isset( $attributes['relays'] ) ? $attributes['relays'] : '';
+$event_id      = isset( $attributes['eventId'] ) ? $attributes['eventId'] : '';
+$disable_guest = isset( $attributes['disableGuest'] ) ? $attributes['disableGuest'] : '';
 
 $frontend = new Disgus\Frontend();
 echo $frontend->render_tag( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	array(
-		'pubkey'   => $pubkey,
-		'relays'   => $relays,
-		'event_id' => $event_id,
+		'pubkey'        => $pubkey,
+		'relays'        => $relays,
+		'event_id'      => $event_id,
+		'disable_guest' => $disable_guest,
 	)
 );
