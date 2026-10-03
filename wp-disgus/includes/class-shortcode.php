@@ -42,9 +42,10 @@ class Shortcode {
 	public function render( $atts = array(), $content = null, $tag = '' ) {
 		$atts = shortcode_atts(
 			array(
-				'pubkey'   => '',
-				'relays'   => '',
-				'event_id' => '',
+				'pubkey'        => '',
+				'relays'        => '',
+				'event_id'      => '',
+				'disable_guest' => '',
 			),
 			$atts,
 			$tag

@@ -21,6 +21,10 @@
 		},
 		"eventId": {
 			"type": "string"
+		},
+		"disableGuest": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"textdomain": "disgus",

@@ -6,7 +6,7 @@ import { useRoot } from '../context/root';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 export default function UserForm() {
-    const { comments } = useRoot();
+    const { comments, config } = useRoot();
     const {
         user, extensionAvailable,
         signInExtension, signInWithKey, signInPasskey,
@@ -132,6 +132,7 @@ export default function UserForm() {
                             </a>
                         )}
                         </Menu.Item>
+                        {!config?.disable_guest && (
                         <Menu.Item>
                         {({ active }) => (
                             <a
@@ -145,6 +146,7 @@ export default function UserForm() {
                             </a>
                         )}
                         </Menu.Item>
+                        )}
                     </div>
                     )}
                     </Menu.Items>
