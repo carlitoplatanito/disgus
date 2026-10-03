@@ -54,7 +54,7 @@ export default function CommentForm() {
         }}
         >
             <textarea
-                className="w-full p-2 m-0 bg-white text-black focus:outline-none"
+                className="w-full p-2 m-0 bg-white text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-inset rounded"
                 id="comment"
                 aria-label="Add a comment"
                 placeholder="Join the discussion..."
@@ -67,7 +67,7 @@ export default function CommentForm() {
             {(focused || comment.length > 0) && 
             <div className="bg-gray-100 text-black m-0 px-2 py-1 flex items-center justify-between">
                 {rootEvent
-                    ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
+                    ? <a className="block whitespace-nowrap truncate rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black" aria-label={`In reply to Nostr event ${rootEvent.id}`} rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
                 {user ? (
