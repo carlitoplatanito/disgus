@@ -34,9 +34,13 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
     oneose() {
       if (returned) return;
 
-      const _comments = comments.filter((value, index, self) =>
-        index === self.findIndex((t) => t.id === value.id)
-      );
+      const seen = new Set();
+      const _comments = comments.filter((comment) => {
+        if (!comment?.id) return false;
+        if (seen.has(comment.id)) return false;
+        seen.add(comment.id);
+        return true;
+      });
       const now = Math.floor(Date.now() / 1000);
 
       if (!cached?.updated_at || cached?.updated_at < now) {
