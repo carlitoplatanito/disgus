@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { postComment } from '../helpers/nostr';
-import { EllipsisHorizontalCircleIcon, PencilSquareIcon, BookmarkIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalCircleIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
 import Button from './Button';
@@ -10,7 +10,7 @@ export default function CommentForm() {
     const { pubkey, relays } = config;
     const [ comment, setComment ] = useState('');
     const [ focused, setFocused ] = useState(false);
-    const { user, signIn, signInRandom } = useUser();
+    const { user, signInExtension, signInRandom } = useUser();
     const focusTimer = useRef();
     
     const createComment = async (rootEventId) => {
@@ -56,6 +56,7 @@ export default function CommentForm() {
             <textarea
                 className="w-full p-2 m-0 bg-white text-black focus:outline-none"
                 id="comment"
+                aria-label="Add a comment"
                 placeholder="Join the discussion..."
                 value={comment}
                 rows={3}
@@ -69,25 +70,24 @@ export default function CommentForm() {
                     ? <a className="block whitespace-nowrap truncate" rel="nostr:event" href={`nostr:e:${rootEvent.id}`} title={`re: ${rootEvent.id}`}><PencilSquareIcon  className="inline-block" width={18} /> {rootEvent.id}</a>
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
-                {user ?
+                {user ? (
                 <Button type="submit" variant="primary">
                     Comment
-                </Button>:
+                </Button>
+                ) : (
                 <div className="whitespace-nowrap">
-                    <Button type="button" variant="primary" className="mr-2" key="plugin" onClick={(e) => { e.preventDefault(); signIn(); }}>
+                    <Button type="button" variant="primary" className={config?.disable_guest ? "" : "mr-2"} key="plugin" onClick={(e) => { e.preventDefault(); signInExtension(); }}>
                         Sign In
                     </Button>
+                    {!config?.disable_guest && (
                     <Button type="button" variant="primary" key="random" onClick={(e) => { e.preventDefault(); signInRandom(); }}>
                         Random Guest
                     </Button>
+                    )}
                 </div>
-                }
+                )}
             </div>}
         </form>
-        <div className="my-3 mx-1">
-            <Button variant="secondary" className="hidden mr-2"><BookmarkIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>0</b></Button>
-            <Button variant="secondary" Component="a" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(config.canonical)}`} target="_blank"><ShareIcon className="-mt-1 mr-1 w-6 h-6 inline-block" /><b>Share</b></Button>
-        </div>
         </>
     );
 }

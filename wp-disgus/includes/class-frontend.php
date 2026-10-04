@@ -117,9 +117,10 @@ class Frontend {
 	public function render_tag( $atts = array() ) {
 		$settings = \disgus_get_settings();
 
-		$pubkey   = ! empty( $atts['pubkey'] ) ? $atts['pubkey'] : $settings['pubkey'];
-		$relays   = ! empty( $atts['relays'] ) ? $atts['relays'] : $settings['relays'];
-		$event_id = ! empty( $atts['event_id'] ) ? $atts['event_id'] : $settings['event_id'];
+		$pubkey        = ! empty( $atts['pubkey'] ) ? $atts['pubkey'] : $settings['pubkey'];
+		$relays        = ! empty( $atts['relays'] ) ? $atts['relays'] : $settings['relays'];
+		$event_id      = ! empty( $atts['event_id'] ) ? $atts['event_id'] : $settings['event_id'];
+		$disable_guest = isset( $atts['disable_guest'] ) && '' !== $atts['disable_guest'] ? $atts['disable_guest'] : $settings['disable_guest'];
 
 		if ( empty( $pubkey ) ) {
 			return '';
@@ -135,6 +136,10 @@ class Frontend {
 
 		if ( ! empty( $event_id ) ) {
 			$attr .= sprintf( ' event-id="%s"', esc_attr( $event_id ) );
+		}
+
+		if ( ! empty( $disable_guest ) && 'false' !== (string) $disable_guest ) {
+			$attr .= ' disable-guest="true"';
 		}
 
 		return '<disgus-comments ' . $attr . '></disgus-comments>';
