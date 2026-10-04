@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react';
-import { copyFileSync } from 'fs';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -48,13 +47,6 @@ export default defineConfig({
         handler(html) {
           return html.replace(/\btype="module"\s*/g, '').replace(/\bcrossorigin\s*/g, '');
         }
-      }
-    },
-    {
-      name: 'wp-disgus',
-      apply: 'build',
-      closeBundle() {
-        copyFileSync('./dist/disgus.js', './wp-disgus/assets/disgus.js');
       }
     }
   ]
