@@ -88,6 +88,7 @@ verified temp guest account).
 | Pubkey             | `pubkey`                                       | `data-pubkey`   | `nostr:pubkey`           |
 | Relays (comma-sep) | `relays`                                       | `data-relays`   | `nostr:relay` (multiple) |
 | Event ID           | `event-id`                                     | `data-event-id` | `nostr:event_id`         |
+| Disable Guest      | `disable-guest`                                | `data-disable-guest` | `nostr:disable_guest` |
 | Canonical URL      | Auto (og:url / link[rel=canonical] / location) |                 | `og:url`                 |
 | Title              | Auto (og:title / document.title)               |                 | `og:title`               |
 

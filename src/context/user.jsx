@@ -129,7 +129,7 @@ export function useUser() {
     };
 
     const signInRandom = (_name) => {
-        if (user) return;
+        if (user || config?.disable_guest) return;
 
         const name = _name || prompt('What\'s your name?', 'Randy Rando');
         if (!name || name.length <= 0) return;
