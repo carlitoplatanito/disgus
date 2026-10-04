@@ -1,16 +1,10 @@
-import { memo, useEffect, useState, useMemo } from 'react';
-import { formatDate } from "../helpers/utils";
+import { useEffect, useState } from 'react';
+import { formatDate, getParentEventId } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
 import { useRoot } from '../context/root';
 
-/**
- * Optimizations implemented:
- * 1. Deriving parentEvent synchronously using useMemo instead of useEffect + setState (eliminates redundant state updates and re-renders per comment on mount).
- * 2. Fetching author with clean useEffect dependency array [pubkey, config?.relays] and unmount guard (prevents infinite or repeated effect executions).
- * 3. Memoized component export using React.memo to prevent unnecessary re-renders of all comment items on parent state updates.
- */
 function Comment({ comment }) {
     const { id, pubkey, content, tags, created_at } = comment;
     const { config, rootEvent } = useRoot();
@@ -28,18 +22,13 @@ function Comment({ comment }) {
     }, [tags]);
 
     useEffect(() => {
-        let isMounted = true;
-        if (pubkey && config?.relays) {
-            getPubkey(pubkey, config.relays).then((_user) => {
-                if (isMounted && _user) {
-                    setAuthor(_user);
-                }
-            });
+        if (!parentEvent) {
+            const parentId = getParentEventId(tags);
+            setParentEvent(parentId || rootEvent.id);
         }
-        return () => {
-            isMounted = false;
-        };
-    }, [pubkey, config?.relays]);
+
+        return;
+    }, [parentEvent, tags, rootEvent]);
 
     return (
         <div className="p-2 mx-auto">

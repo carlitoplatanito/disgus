@@ -8,55 +8,86 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
   let since = 0;
   let cached = {};
   let returned = false;
+  const commentsCacheKey = `c:${rootEvent.id}`;
 
-  if (localStorage.getItem(`e:${rootEvent.id}`)) {
-    cached = JSON.parse(localStorage.getItem(`e:${rootEvent.id}`));
-    comments = cached.comments;
-    if (comments && !force) {
-      resolve(comments);
-      return;
+  if (localStorage.getItem(commentsCacheKey)) {
+    try {
+      cached = JSON.parse(localStorage.getItem(commentsCacheKey));
+      if (cached?.comments) {
+        comments = cached.comments;
+        if (comments && !force) {
+          resolve(comments);
+          return;
+        }
+        since = force ? 0 : (cached.updated_at || 0);
+      }
+    } catch (e) {
+      /* ignore invalid JSON */
     }
-    since = force ? 0 : cached.updated_at;
   }
 
-  const sub = pool.subscribe(relays, {
-    limit: 100,
-    kinds: [1],
-    since,
-    '#e': [rootEvent.id]
-  }, {
-    onevent(event) {
-      comments.push(event);
-      if (!localStorage.getItem(`e:${event.id}`)) {
-        localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
-      }
-    },
-    oneose() {
-      if (returned) return;
+  const queriedIds = new Set([rootEvent.id]);
+  if (comments && comments.length > 0) {
+    comments.forEach((c) => {
+      if (c && c.id) queriedIds.add(c.id);
+    });
+  }
 
-      const seen = new Set();
-      const _comments = comments.filter((comment) => {
-        if (!comment?.id) return false;
-        if (seen.has(comment.id)) return false;
-        seen.add(comment.id);
-        return true;
-      });
-      const now = Math.floor(Date.now() / 1000);
+  const fetchPass = (idsToQuery) => {
+    let newEventsFound = 0;
+    const sub = pool.subscribe(relays, {
+      limit: 500,
+      kinds: [1],
+      since,
+      '#e': Array.from(idsToQuery)
+    }, {
+      onevent(event) {
+        if (!comments.some((c) => c.id === event.id)) {
+          comments.push(event);
+          newEventsFound++;
+        }
+        if (!localStorage.getItem(`e:${event.id}`)) {
+          localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
+        }
+      },
+      oneose() {
+        try { sub.close(); } catch (e) { /* ignore */ }
 
-      if (!cached?.updated_at || cached?.updated_at < now) {
-        localStorage.setItem(`e:${rootEvent.id}`, JSON.stringify({
-          ...cached,
-          updated_at: now,
-          comments: _comments
-        }));
-        cached.updated_at = now;
-        resolve(_comments);
-        returned = true;
+        // Check if any newly discovered comments have IDs that haven't been queried yet
+        const unqueriedIds = new Set();
+        comments.forEach((c) => {
+          if (c && c.id && !queriedIds.has(c.id)) {
+            unqueriedIds.add(c.id);
+            queriedIds.add(c.id);
+          }
+        });
+
+        if (unqueriedIds.size > 0 && newEventsFound > 0) {
+          fetchPass(unqueriedIds);
+        } else {
+          if (returned) return;
+
+          const _comments = comments.filter((value, index, self) =>
+            index === self.findIndex((t) => t.id === value.id)
+          );
+          const now = Math.floor(Date.now() / 1000);
+
+          localStorage.setItem(commentsCacheKey, JSON.stringify({
+            ...cached,
+            updated_at: now,
+            comments: _comments
+          }));
+          cached.updated_at = now;
+          resolve(_comments);
+          returned = true;
+
+          try { pool.close(relays); } catch (e) { /* ignore */ }
+        }
       }
-      try { sub.close(); } catch (e) { /* ignore */ }
-      try { pool.close(relays); } catch (e) { /* ignore */ }
-    }
-  });
+    });
+  };
+
+  fetchPass(queriedIds);
 });
 
 export const getPubkey = (pubkey, relays) => new Promise((resolve) => {
@@ -140,15 +171,32 @@ export const getRootEvent = (config) => new Promise((resolve) => {
   let returned = false;
 
   if (event_id && localStorage.getItem(`e:${event_id}`)) {
-    const cached = JSON.parse(localStorage.getItem(`e:${event_id}`));
-    localStorage.setItem(`r:${canonical}`, JSON.stringify(cached));
-    resolve(cached);
-    return;
+    try {
+      const cached = JSON.parse(localStorage.getItem(`e:${event_id}`));
+      if (cached && cached.id && Array.isArray(cached.tags)) {
+        localStorage.setItem(`r:${canonical}`, JSON.stringify(cached));
+        resolve(cached);
+        return;
+      } else {
+        localStorage.removeItem(`e:${event_id}`);
+      }
+    } catch (e) {
+      localStorage.removeItem(`e:${event_id}`);
+    }
   }
 
   if (localStorage.getItem(`r:${canonical}`)) {
-    resolve(JSON.parse(localStorage.getItem(`r:${canonical}`)));
-    return;
+    try {
+      const cached = JSON.parse(localStorage.getItem(`r:${canonical}`));
+      if (cached && cached.id && Array.isArray(cached.tags)) {
+        resolve(cached);
+        return;
+      } else {
+        localStorage.removeItem(`r:${canonical}`);
+      }
+    } catch (e) {
+      localStorage.removeItem(`r:${canonical}`);
+    }
   }
 
   const pool = new SimplePool();
@@ -158,6 +206,7 @@ export const getRootEvent = (config) => new Promise((resolve) => {
     sub = pool.subscribe(relays, { ids: [event_id], kinds: [1], limit: 1 }, {
       onevent(event) {
         if (returned) return;
+        localStorage.setItem(`e:${event_id}`, JSON.stringify(event));
         localStorage.setItem(`r:${canonical}`, JSON.stringify(event));
         resolve(event);
         returned = true;
