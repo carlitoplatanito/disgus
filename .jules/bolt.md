@@ -14,3 +14,8 @@
 
 **Learning:** Calling `new Intl.DateTimeFormat()` repeatedly inside utility functions like `formatDate` during component rendering incurs extreme CPU instantiation overhead (~50x slower) and triggers heavy garbage collection pressure.
 **Action:** Cache and reuse `Intl.DateTimeFormat` instances in a `Map` keyed by locale and options string.
+
+## 2026-10-04 - O(N²) quadratic overhead in streaming WebSocket event collection
+
+**Learning:** Checking `comments.some(c => c.id === event.id)` during real-time event ingestion scans an array on every incoming WebSocket message, causing O(N²) complexity as N grows. Subsequently running `filter` + `findIndex` on EOSE duplicates this O(N²) scan.
+**Action:** Track event IDs using an O(1) `Set` upon receipt to guarantee uniqueness in O(N) total streaming time, eliminating the need for post-fetch deduplication scans.

@@ -27,9 +27,14 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
   }
 
   const queriedIds = new Set([rootEvent.id]);
+  // Use Set for O(1) comment ID tracking to eliminate O(N) Array.prototype.some scans during event streaming
+  const commentIds = new Set();
   if (comments && comments.length > 0) {
     comments.forEach((c) => {
-      if (c && c.id) queriedIds.add(c.id);
+      if (c && c.id) {
+        queriedIds.add(c.id);
+        commentIds.add(c.id);
+      }
     });
   }
 
@@ -42,11 +47,13 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
       '#e': Array.from(idsToQuery)
     }, {
       onevent(event) {
-        if (!comments.some((c) => c.id === event.id)) {
+        // O(1) Set lookup prevents duplicate insertion and eliminates O(N²) quadratic overhead as events stream
+        if (event && event.id && !commentIds.has(event.id)) {
+          commentIds.add(event.id);
           comments.push(event);
           newEventsFound++;
         }
-        if (!localStorage.getItem(`e:${event.id}`)) {
+        if (event && event.id && !localStorage.getItem(`e:${event.id}`)) {
           localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
         }
       },
@@ -67,18 +74,16 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
         } else {
           if (returned) return;
 
-          const _comments = comments.filter((value, index, self) =>
-            index === self.findIndex((t) => t.id === value.id)
-          );
+          // Comments are already deduplicated in O(1) upon receipt, avoiding O(N²) filter + findIndex scan on EOSE
           const now = Math.floor(Date.now() / 1000);
 
           localStorage.setItem(commentsCacheKey, JSON.stringify({
             ...cached,
             updated_at: now,
-            comments: _comments
+            comments: comments
           }));
           cached.updated_at = now;
-          resolve(_comments);
+          resolve(comments);
           returned = true;
 
           try { pool.close(relays); } catch (e) { /* ignore */ }
