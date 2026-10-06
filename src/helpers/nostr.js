@@ -27,9 +27,13 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
   }
 
   const queriedIds = new Set([rootEvent.id]);
+  const seenIds = new Set();
   if (comments && comments.length > 0) {
     comments.forEach((c) => {
-      if (c && c.id) queriedIds.add(c.id);
+      if (c && c.id) {
+        queriedIds.add(c.id);
+        seenIds.add(c.id);
+      }
     });
   }
 
@@ -42,7 +46,9 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
       '#e': Array.from(idsToQuery)
     }, {
       onevent(event) {
-        if (!comments.some((c) => c.id === event.id)) {
+        // O(1) set lookup instead of O(N) Array.prototype.some scan
+        if (event && event.id && !seenIds.has(event.id)) {
+          seenIds.add(event.id);
           comments.push(event);
           newEventsFound++;
         }
@@ -67,9 +73,16 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
         } else {
           if (returned) return;
 
-          const _comments = comments.filter((value, index, self) =>
-            index === self.findIndex((t) => t.id === value.id)
-          );
+          // Deduplicate in O(N) using Set-tracking instead of O(N²) filter + findIndex
+          const dedupSeen = new Set();
+          const _comments = [];
+          for (let i = 0; i < comments.length; i++) {
+            const item = comments[i];
+            if (item && item.id && !dedupSeen.has(item.id)) {
+              dedupSeen.add(item.id);
+              _comments.push(item);
+            }
+          }
           const now = Math.floor(Date.now() / 1000);
 
           localStorage.setItem(commentsCacheKey, JSON.stringify({
