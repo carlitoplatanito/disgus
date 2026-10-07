@@ -14,3 +14,8 @@
 
 **Learning:** Calling `new Intl.DateTimeFormat()` repeatedly inside utility functions like `formatDate` during component rendering incurs extreme CPU instantiation overhead (~50x slower) and triggers heavy garbage collection pressure.
 **Action:** Cache and reuse `Intl.DateTimeFormat` instances in a `Map` keyed by locale and options string.
+
+## 2026-10-04 - O(N²) event streaming lookup and comment array deduplication in relay fetches
+
+**Learning:** Checking incoming Nostr events during WebSocket streaming with `Array.prototype.some` and deduplicating array items with `filter` + `findIndex` incurs O(N²) time complexity per fetch pass.
+**Action:** Pre-seed a `Set` with known IDs for O(1) streaming lookups and O(N) linear array deduplication.
