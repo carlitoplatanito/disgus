@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getParentEventId } from '../src/helpers/utils.js';
+import { getParentEventId, sanitizeUrl } from '../src/helpers/utils.js';
 
 test('getParentEventId returns null for empty or non-array tags', () => {
   assert.equal(getParentEventId(null), null);
@@ -44,4 +44,18 @@ test('getParentEventId ignores mention tags in positional fallback', () => {
     ['e', 'mentionId999', 'wss://relay.com', 'mention']
   ];
   assert.equal(getParentEventId(tagsWithMention), 'rootId123');
+});
+
+test('sanitizeUrl allows safe URLs and blocks malicious schemes', () => {
+  assert.equal(sanitizeUrl('https://example.com/avatar.jpg'), 'https://example.com/avatar.jpg');
+  assert.equal(sanitizeUrl('http://example.com/avatar.png'), 'http://example.com/avatar.png');
+  assert.equal(sanitizeUrl('//cdn.example.com/pic.jpg'), '//cdn.example.com/pic.jpg');
+  assert.equal(sanitizeUrl('/images/avatar.jpg'), '/images/avatar.jpg');
+  assert.equal(sanitizeUrl('blob:https://example.com/uuid'), 'blob:https://example.com/uuid');
+
+  assert.equal(sanitizeUrl('javascript:alert(1)'), null);
+  assert.equal(sanitizeUrl('data:text/html,<script>alert(1)</script>'), null);
+  assert.equal(sanitizeUrl('vbscript:msgbox("XSS")'), null);
+  assert.equal(sanitizeUrl(null), null);
+  assert.equal(sanitizeUrl(''), null);
 });
