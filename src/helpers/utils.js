@@ -35,6 +35,16 @@ export function formatDate(date, locales = browserLocales) {
     return getDateTimeFormatter(locales, options).format(date);
 }
 
+export function sanitizeUrl(url) {
+    if (typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    if (/^(https?:\/\/|\/\/|\/|blob:)/i.test(trimmed)) {
+        return trimmed;
+    }
+    return null;
+}
+
 export function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }

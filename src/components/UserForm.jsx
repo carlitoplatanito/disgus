@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { classNames } from "../helpers/utils";
+import { classNames, sanitizeUrl } from "../helpers/utils";
 import { Menu, Transition } from '@headlessui/react';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
@@ -23,8 +23,8 @@ export default function UserForm() {
                 <div>
                     <Menu.Button className="inline-flex align-center justify-center px-4 py-2">
                         <figure className="avatar placeholder mr-2">
-                        {user && user.picture
-                            ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={user.picture} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
+                        {user && sanitizeUrl(user.picture)
+                            ? <img className="object-cover rounded-full w-6 h-6 ring ring-1 ring-black" src={sanitizeUrl(user.picture)} style={{backgroundColor: `#${user.pubkey.substr(0,6)}`, lineHeight: 0}} />
                             : <div className="flex items-center justify-center w-6 h-6 ring ring-1 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${user.pubkey ? user.pubkey.substr(0,6) : 'ffffff'}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-md">{user.pubkey ? user.pubkey.substr(0,2) : '?'}</span></div>
                         }
                         </figure>
