@@ -29,7 +29,11 @@ function getDateTimeFormatter(locales, options) {
 }
 
 export function formatDate(date, locales = browserLocales) {
-    const today = (new Date().toLocaleDateString() === date.toLocaleDateString());
+    // Compare numeric local date components to avoid expensive toLocaleDateString() allocations
+    const now = new Date();
+    const today = now.getFullYear() === date.getFullYear() &&
+                  now.getMonth() === date.getMonth() &&
+                  now.getDate() === date.getDate();
     const options = { dateStyle: today ? undefined : 'short', timeStyle: today ? 'medium' : 'short' };
 
     return getDateTimeFormatter(locales, options).format(date);
