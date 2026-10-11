@@ -37,14 +37,14 @@ function Comment({ comment }) {
             <div className={`flex items-top justify-between ${parentEvent !== rootEvent?.id ? 'ml-14 sm:ml-20' : ''}`}>
                 <figure className="w-12 sm:w-16 avatar mr-4 flex-basis" style={{flexGrow: 0, flexShrink: 0}}>
                     {author && author.picture
-                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
+                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} alt={author.display_name || author.name || 'Author avatar'} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
                         : <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 ring ring-2 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-3xl">{pubkey.substr(0,2)}</span></div>
                     }
                 </figure>
                 <div className="flex-grow flex-shrink overflow-hidden">
                     <div className="flex items-top justify-between">
                         <div className="flex-shrink flex-grow overflow-hidden">
-                            <a href={`nostr:p:${pubkey}`} title={pubkey} className="text-lg block truncate">
+                            <a href={`nostr:p:${pubkey}`} title={pubkey} className="text-lg block truncate rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black">
                                 {parentEvent !== rootEvent?.id ? <ArrowUturnDownIcon className="inline w-4 h-4 -mt-1 mr-1 rotate-180" /> : ''}
                                 <b>{ author.display_name || author.name || pubkey }</b>
                                 { author.nip05 
@@ -52,7 +52,7 @@ function Comment({ comment }) {
                                     : <abbr className="opacity-70" title={`Rando ${pubkey}`}><ShieldExclamationIcon className="-mt-1 mx-1 w-4 h-4 inline-block" /></abbr>
                                 }
                             </a>
-                            <a href={`nostr:e:${id}`} title={id} className="text-xs block whitespace-nowrap truncate opacity-70">
+                            <a href={`nostr:e:${id}`} title={id} className="text-xs block whitespace-nowrap truncate opacity-70 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black">
                                 <time dateTime={createdDate.toISOString()}><ClockIcon className="w-3 h-3 inline" /> {formatDate(createdDate)}</time>
                             </a>
                         </div>
