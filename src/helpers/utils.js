@@ -43,27 +43,41 @@ export function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+/**
+ * Single-pass NIP-10 tag parser to extract parent event ID without array allocations.
+ * Replaces O(k) filter/find array allocations with direct single-loop tracking.
+ */
 export function getParentEventId(tags) {
     if (!Array.isArray(tags)) return null;
 
-    const eTags = tags.filter((t) => Array.isArray(t) && t[0] === 'e' && t[1]);
-    if (eTags.length === 0) return null;
+    let replyTagVal = null;
+    let rootTagVal = null;
+    let lastNonMentionVal = null;
+    let lastETagVal = null;
+    let nonMentionCount = 0;
+    let eTagCount = 0;
 
-    // 1. NIP-10 marked 'reply' tag
-    const replyTag = eTags.find((t) => t[3] === 'reply');
-    if (replyTag) return replyTag[1];
-
-    // 2. NIP-10 marked 'root' tag
-    const rootTag = eTags.find((t) => t[3] === 'root');
-    if (rootTag) return rootTag[1];
-
-    // 3. Positional / unmarked tags (filter out 'mention' tags)
-    const nonMentionTags = eTags.filter((t) => t[3] !== 'mention');
-    if (nonMentionTags.length === 1) {
-        return nonMentionTags[0][1];
-    } else if (nonMentionTags.length >= 2) {
-        return nonMentionTags[nonMentionTags.length - 1][1];
+    for (let i = 0; i < tags.length; i++) {
+        const t = tags[i];
+        if (Array.isArray(t) && t[0] === 'e' && t[1]) {
+            eTagCount++;
+            lastETagVal = t[1];
+            const marker = t[3];
+            if (marker === 'reply') {
+                if (!replyTagVal) replyTagVal = t[1];
+            } else if (marker === 'root') {
+                if (!rootTagVal) rootTagVal = t[1];
+            }
+            if (marker !== 'mention') {
+                nonMentionCount++;
+                lastNonMentionVal = t[1];
+            }
+        }
     }
 
-    return eTags[eTags.length - 1][1];
+    if (eTagCount === 0) return null;
+    if (replyTagVal) return replyTagVal;
+    if (rootTagVal) return rootTagVal;
+    if (nonMentionCount > 0) return lastNonMentionVal;
+    return lastETagVal;
 }
