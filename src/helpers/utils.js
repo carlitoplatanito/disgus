@@ -39,6 +39,16 @@ export function formatDate(date, locales = browserLocales) {
     return getDateTimeFormatter(locales, options).format(date);
 }
 
+export function isSafeUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    try {
+        const parsed = new URL(url, 'http://localhost');
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
 export function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }

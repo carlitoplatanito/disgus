@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getParentEventId } from '../src/helpers/utils.js';
+import { getParentEventId, isSafeUrl } from '../src/helpers/utils.js';
 
 test('getParentEventId returns null for empty or non-array tags', () => {
   assert.equal(getParentEventId(null), null);
@@ -44,4 +44,16 @@ test('getParentEventId ignores mention tags in positional fallback', () => {
     ['e', 'mentionId999', 'wss://relay.com', 'mention']
   ];
   assert.equal(getParentEventId(tagsWithMention), 'rootId123');
+});
+
+test('isSafeUrl validates URL schemes correctly', () => {
+  assert.equal(isSafeUrl('https://example.com/avatar.png'), true);
+  assert.equal(isSafeUrl('http://example.com/avatar.jpg'), true);
+
+  assert.equal(isSafeUrl('javascript:alert(1)'), false);
+  assert.equal(isSafeUrl('data:text/html,<script>alert(1)</script>'), false);
+  assert.equal(isSafeUrl('file:///etc/passwd'), false);
+  assert.equal(isSafeUrl(''), false);
+  assert.equal(isSafeUrl(null), false);
+  assert.equal(isSafeUrl(123), false);
 });
