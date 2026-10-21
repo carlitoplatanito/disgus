@@ -19,3 +19,8 @@
 
 **Learning:** Checking incoming Nostr events during WebSocket streaming with `Array.prototype.some` and deduplicating array items with `filter` + `findIndex` incurs O(N²) time complexity per fetch pass.
 **Action:** Pre-seed a `Set` with known IDs for O(1) streaming lookups and O(N) linear array deduplication.
+
+## 2026-10-05 - Synchronous context state initialization vs useEffect storage hydration
+
+**Learning:** Initializing context state with a default `false` value and reading `localStorage` inside `useEffect` with boolean negation dependencies (like `[!user]`) causes an extra unauthenticated render, an unneeded secondary effect invocation, and unmemoized context provider value churn across child components.
+**Action:** Use lazy state initialization `useState(() => ...)` to hydrate storage state synchronously on mount, scope effect dependencies to stable fields (`user?.pubkey`), and memoize context values with `useMemo`.

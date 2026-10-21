@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { getPublicKey } from 'nostr-tools/pure';
 import { SimplePool, finalizeEvent, generateSecretKey, getEventHash } from 'nostr-tools';
 import {
@@ -21,23 +21,45 @@ export const UserContext = React.createContext();
 
 export const UserProvider = ({ children }) => {
     const { config } = useContext(RootContext);
-    const [user, setUser] = useState(false);
-    const [passkeyAvailable, setPasskeyAvailable] = useState(false);
-
-    useEffect(() => {
-        setPasskeyAvailable(hasStoredPasskeyIdentity());
-
-        if (!user && localStorage.getItem(cacheKey)) {
-            const localUser = JSON.parse(localStorage.getItem(cacheKey));
-
-            setUser(localUser);
-            if (localUser.pubkey) {
-                getPubkey(localUser.pubkey, config.relays).then((_user) => setUser({ ...localUser, ..._user }));
-            }
+    const [user, setUser] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        try {
+            const stored = localStorage.getItem(cacheKey);
+            return stored ? JSON.parse(stored) : false;
+        } catch (e) {
+            return false;
         }
-    }, [!user]);
+    });
+    const [passkeyAvailable, setPasskeyAvailable] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        try {
+            return hasStoredPasskeyIdentity();
+        } catch (e) {
+            return false;
+        }
+    });
 
-    return <UserContext.Provider value={{ user, setUser, passkeyAvailable, setPasskeyAvailable }}>{children}</UserContext.Provider>;
+    // Synchronously initialize state from localStorage to avoid extra mount re-renders and layout flashes.
+    // Scope dependencies strictly to user.pubkey and relays to prevent redundant effect executions.
+    useEffect(() => {
+        let isMounted = true;
+        if (user?.pubkey && config?.relays) {
+            getPubkey(user.pubkey, config.relays).then((_user) => {
+                if (isMounted && _user) {
+                    setUser((prev) => (prev ? { ...prev, ..._user } : _user));
+                }
+            });
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [user?.pubkey, config?.relays]);
+
+    const contextValue = useMemo(() => ({
+        user, setUser, passkeyAvailable, setPasskeyAvailable
+    }), [user, passkeyAvailable]);
+
+    return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 }
 
 export const UserConsumer = UserContext.Consumer;
