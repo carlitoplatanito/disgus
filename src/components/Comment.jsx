@@ -1,5 +1,5 @@
 import { useEffect, useState, memo, useMemo } from 'react';
-import { formatDate, getParentEventId } from "../helpers/utils";
+import { formatDate, getParentEventId, sanitizeUrl } from "../helpers/utils";
 import { getPubkey } from '../helpers/nostr';
 import { CheckBadgeIcon, ShieldExclamationIcon, ArrowUturnDownIcon, MinusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { ClockIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
@@ -36,8 +36,8 @@ function Comment({ comment }) {
         <div className="p-2 mx-auto">
             <div className={`flex items-top justify-between ${parentEvent !== rootEvent?.id ? 'ml-14 sm:ml-20' : ''}`}>
                 <figure className="w-12 sm:w-16 avatar mr-4 flex-basis" style={{flexGrow: 0, flexShrink: 0}}>
-                    {author && author.picture
-                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={author.picture} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
+                    {author && sanitizeUrl(author.picture)
+                        ? <img className="object-cover rounded-full w-12  h-12 sm:w-16 sm:h-16 ring ring-2 ring-black" src={sanitizeUrl(author.picture)} style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0}} />
                         : <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 ring ring-2 ring-black rounded-full uppercase text-black" style={{backgroundColor: `#${pubkey.substr(0,6)}`, lineHeight: 0, verticalAlign: 'center'}}><span className="text-3xl">{pubkey.substr(0,2)}</span></div>
                     }
                 </figure>

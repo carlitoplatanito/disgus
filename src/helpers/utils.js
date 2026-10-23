@@ -43,6 +43,26 @@ export function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+export function sanitizeUrl(url) {
+    if (typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return trimmed;
+        }
+        if (parsed.protocol === 'data:' && /^data:image\//i.test(trimmed)) {
+            return trimmed;
+        }
+    } catch (e) {
+        // Relative or invalid URL format
+        return null;
+    }
+    return null;
+}
+
 export function getParentEventId(tags) {
     if (!Array.isArray(tags)) return null;
 

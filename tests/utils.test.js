@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getParentEventId } from '../src/helpers/utils.js';
+import { getParentEventId, sanitizeUrl } from '../src/helpers/utils.js';
 
 test('getParentEventId returns null for empty or non-array tags', () => {
   assert.equal(getParentEventId(null), null);
@@ -44,4 +44,20 @@ test('getParentEventId ignores mention tags in positional fallback', () => {
     ['e', 'mentionId999', 'wss://relay.com', 'mention']
   ];
   assert.equal(getParentEventId(tagsWithMention), 'rootId123');
+});
+
+test('sanitizeUrl allows valid http, https, and image data URIs', () => {
+  assert.equal(sanitizeUrl('https://example.com/avatar.png'), 'https://example.com/avatar.png');
+  assert.equal(sanitizeUrl('http://example.com/avatar.jpg'), 'http://example.com/avatar.jpg');
+  assert.equal(sanitizeUrl('data:image/png;base64,iVBORw0KGgoAAAANSUHGgo='), 'data:image/png;base64,iVBORw0KGgoAAAANSUHGgo=');
+});
+
+test('sanitizeUrl rejects dangerous or invalid URLs', () => {
+  assert.equal(sanitizeUrl('javascript:alert(1)'), null);
+  assert.equal(sanitizeUrl('JAVASCRIPT:alert(1)'), null);
+  assert.equal(sanitizeUrl('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=='), null);
+  assert.equal(sanitizeUrl('/relative/path.png'), null);
+  assert.equal(sanitizeUrl('not a url'), null);
+  assert.equal(sanitizeUrl(null), null);
+  assert.equal(sanitizeUrl(undefined), null);
 });
