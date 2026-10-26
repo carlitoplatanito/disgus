@@ -28,6 +28,7 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
 
   const queriedIds = new Set([rootEvent.id]);
   const seenIds = new Set();
+  const storedEventIds = new Set();
   if (comments && comments.length > 0) {
     comments.forEach((c) => {
       if (c && c.id) {
@@ -46,14 +47,18 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
       '#e': Array.from(idsToQuery)
     }, {
       onevent(event) {
-        // O(1) set lookup instead of O(N) Array.prototype.some scan
-        if (event && event.id && !seenIds.has(event.id)) {
-          seenIds.add(event.id);
-          comments.push(event);
-          newEventsFound++;
-        }
-        if (!localStorage.getItem(`e:${event.id}`)) {
-          localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
+        if (event && event.id) {
+          if (!seenIds.has(event.id)) {
+            seenIds.add(event.id);
+            comments.push(event);
+            newEventsFound++;
+          }
+          if (!storedEventIds.has(event.id)) {
+            storedEventIds.add(event.id);
+            if (!localStorage.getItem(`e:${event.id}`)) {
+              localStorage.setItem(`e:${event.id}`, JSON.stringify(event));
+            }
+          }
         }
       },
       oneose() {

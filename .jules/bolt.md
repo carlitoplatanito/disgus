@@ -19,3 +19,8 @@
 
 **Learning:** Checking incoming Nostr events during WebSocket streaming with `Array.prototype.some` and deduplicating array items with `filter` + `findIndex` incurs O(N²) time complexity per fetch pass.
 **Action:** Pre-seed a `Set` with known IDs for O(1) streaming lookups and O(N) linear array deduplication.
+
+## 2026-10-15 - Synchronous LocalStorage I/O in event stream callbacks
+
+**Learning:** Unconditionally performing `localStorage.getItem` and `localStorage.setItem` for every incoming event in a high-frequency WebSocket stream introduces heavy synchronous I/O overhead.
+**Action:** Use an in-memory `Set` to track event IDs that have already been stored or checked during the fetch pass, skipping redundant synchronous `localStorage` reads and writes.
