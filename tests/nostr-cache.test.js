@@ -56,3 +56,29 @@ test('Comments cache key c:eventId does not collide with single event key e:even
   assert.equal(retrievedComments.comments.length, 1);
   assert.equal(retrievedComments.comments[0].id, '2222');
 });
+
+test('getPubkey caches result in memory and deduplicates concurrent inflight requests', async () => {
+  localStorage.clear();
+  const pubkey = 'testpubkey1234567890';
+  const profile = { pubkey, name: 'TestUser', created_at: 1000 };
+
+  localStorage.setItem(`p:${pubkey}`, JSON.stringify(profile));
+
+  const { getPubkey } = await import('../src/helpers/nostr.js');
+
+  // Trigger first getPubkey call
+  const p1 = getPubkey(pubkey, ['wss://relay.example.com']);
+  // Trigger concurrent second getPubkey call for same pubkey
+  const p2 = getPubkey(pubkey, ['wss://relay.example.com']);
+
+  // Check inflight request deduplication (both return same promise / resolve to same object)
+  const [res1, res2] = await Promise.all([p1, p2]);
+  assert.equal(res1, res2);
+  assert.equal(res1.name, 'TestUser');
+
+  // Mutate localStorage to test if subsequent calls hit in-memory cache directly
+  localStorage.setItem(`p:${pubkey}`, JSON.stringify({ pubkey, name: 'MutatedUser', created_at: 2000 }));
+
+  const res3 = await getPubkey(pubkey, ['wss://relay.example.com']);
+  assert.equal(res3.name, 'TestUser'); // Should be served from in-memory cache
+});

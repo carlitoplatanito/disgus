@@ -103,46 +103,95 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
   fetchPass(queriedIds);
 });
 
-export const getPubkey = (pubkey, relays) => new Promise((resolve) => {
-  let user = { pubkey, created_at: 0 };
-  let returned = false;
+const pubkeyCache = new Map();
+const pubkeyPromises = new Map();
 
-  if (localStorage.getItem(`p:${pubkey}`)) {
-    user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
-    if (user.created_at > 0) {
-      resolve(user);
-      return;
+/**
+ * Fetch and cache Nostr pubkey user profile (kind 0 event).
+ * Optimizations implemented:
+ * 1. In-memory Map caching (`pubkeyCache`) to bypass synchronous `localStorage` reading & `JSON.parse` overhead.
+ * 2. Inflight request deduplication (`pubkeyPromises`) to prevent redundant WebSocket subscriptions for the same author.
+ */
+export const getPubkey = (pubkey, relays) => {
+  if (!pubkey) return Promise.resolve(null);
+
+  if (pubkeyCache.has(pubkey)) {
+    return Promise.resolve(pubkeyCache.get(pubkey));
+  }
+
+  if (typeof localStorage !== 'undefined' && localStorage.getItem(`p:${pubkey}`)) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(`p:${pubkey}`));
+      if (cached && cached.created_at > 0) {
+        pubkeyCache.set(pubkey, cached);
+        return Promise.resolve(cached);
+      }
+    } catch (e) {
+      /* ignore invalid JSON */
     }
   }
 
-  const pool = new SimplePool();
-  const sub = pool.subscribe(relays, {
-    kinds: [0],
-    authors: [pubkey]
-  }, {
-    onevent(_event) {
-      if (returned) return;
-      if (!user.created_at || _event.created_at > user.created_at) {
-        try {
-          user = {
-            ...user,
-            ...JSON.parse(_event.content),
-            created_at: _event.created_at
-          };
-          localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
+  if (pubkeyPromises.has(pubkey)) {
+    return pubkeyPromises.get(pubkey);
+  }
+
+  const promise = new Promise((resolve) => {
+    let user = { pubkey, created_at: 0 };
+    let returned = false;
+
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(`p:${pubkey}`)) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(`p:${pubkey}`));
+        if (cached) user = cached;
+      } catch (e) {
+        /* ignore invalid JSON */
+      }
+    }
+
+    const pool = new SimplePool();
+    const sub = pool.subscribe(relays, {
+      kinds: [0],
+      authors: [pubkey]
+    }, {
+      onevent(_event) {
+        if (returned) return;
+        if (!user.created_at || _event.created_at > user.created_at) {
+          try {
+            user = {
+              ...user,
+              ...JSON.parse(_event.content),
+              created_at: _event.created_at
+            };
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
+            }
+            pubkeyCache.set(pubkey, user);
+            pubkeyPromises.delete(pubkey);
+            resolve(user);
+            returned = true;
+          } catch (e) {
+            // invalid JSON content
+          }
+        }
+      },
+      oneose() {
+        try { sub.close(); } catch (e) { /* ignore */ }
+        try { pool.close(relays); } catch (e) { /* ignore */ }
+        if (!returned) {
+          if (user.created_at > 0) {
+            pubkeyCache.set(pubkey, user);
+          }
+          pubkeyPromises.delete(pubkey);
           resolve(user);
           returned = true;
-        } catch (e) {
-          // invalid JSON content
         }
       }
-    },
-    oneose() {
-      try { sub.close(); } catch (e) { /* ignore */ }
-      try { pool.close(relays); } catch (e) { /* ignore */ }
-    }
+    });
   });
-});
+
+  pubkeyPromises.set(pubkey, promise);
+  return promise;
+};
 
 export const createRootEvent = (config) => new Promise((resolve) => {
   const { pubkey, title, description, canonical, relays } = config;
