@@ -46,7 +46,8 @@ export function classNames(...classes) {
 export function sanitizeUrl(url) {
     if (typeof url !== 'string') return null;
     const trimmed = url.trim();
-    if (!trimmed) return null;
+    // Reject control characters (ASCII 0x00-0x1F, 0x7F) that could be used for protocol obfuscation or injection
+    if (!trimmed || /[\x00-\x1F\x7F]/.test(trimmed)) return null;
 
     try {
         const parsed = new URL(trimmed);

@@ -55,6 +55,8 @@ test('sanitizeUrl allows valid http, https, and image data URIs', () => {
 test('sanitizeUrl rejects dangerous or invalid URLs', () => {
   assert.equal(sanitizeUrl('javascript:alert(1)'), null);
   assert.equal(sanitizeUrl('JAVASCRIPT:alert(1)'), null);
+  assert.equal(sanitizeUrl('java\0script:alert(1)'), null);
+  assert.equal(sanitizeUrl('https://example.com/avatar.png\0.html'), null);
   assert.equal(sanitizeUrl('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=='), null);
   assert.equal(sanitizeUrl('/relative/path.png'), null);
   assert.equal(sanitizeUrl('not a url'), null);
