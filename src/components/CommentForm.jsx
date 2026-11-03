@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { postComment } from '../helpers/nostr';
-import { EllipsisHorizontalCircleIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { EllipsisHorizontalCircleIcon, PencilSquareIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useUser } from '../context/user';
 import { useRoot } from '../context/root';
 import Button from './Button';
@@ -10,6 +10,7 @@ export default function CommentForm() {
     const { pubkey, relays } = config;
     const [ comment, setComment ] = useState('');
     const [ focused, setFocused ] = useState(false);
+    const [ submitting, setSubmitting ] = useState(false);
     const { user, signInExtension, signInRandom } = useUser();
     const focusTimer = useRef();
     
@@ -20,15 +21,20 @@ export default function CommentForm() {
         }
         tags.push(['client', 'Disgus']);
 
-        if (comment.length > 0) {
-            postComment({
-                pubkey: user.pubkey,
-                content: comment,
-                tags
-            }, user, relays).then(() => {
+        if (comment.trim().length > 0) {
+            try {
+                await postComment({
+                    pubkey: user.pubkey,
+                    content: comment,
+                    tags
+                }, user, relays);
                 setComment('');
                 refreshComments();
-            });
+            } finally {
+                setSubmitting(false);
+            }
+        } else {
+            setSubmitting(false);
         }
     }
 
@@ -37,12 +43,17 @@ export default function CommentForm() {
         <form className="shadow relative appearance-none bg-white rounded" aria-disabled={!user} 
         onSubmit={async (e) => {
                 e.preventDefault();
-                if (rootEvent) {
-                    await createComment(rootEvent.id);
-                } else {
-                    createRoot().then(async (_event) => {
+                if (submitting || comment.trim().length === 0) return;
+                setSubmitting(true);
+                try {
+                    if (rootEvent) {
+                        await createComment(rootEvent.id);
+                    } else {
+                        const _event = await createRoot();
                         await createComment(_event.id);
-                    });
+                    }
+                } catch (err) {
+                    setSubmitting(false);
                 }
         }}
         onFocus={(e) => {
@@ -71,8 +82,20 @@ export default function CommentForm() {
                     : <EllipsisHorizontalCircleIcon width={18} />
                 }
                 {user ? (
-                <Button type="submit" variant="primary">
-                    Comment
+                <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={submitting || comment.trim().length === 0}
+                    aria-busy={submitting}
+                >
+                    {submitting ? (
+                        <span className="inline-flex items-center">
+                            <ArrowPathIcon className="animate-spin -ml-1 mr-2 h-4 w-4 inline-block" aria-hidden="true" />
+                            Posting...
+                        </span>
+                    ) : (
+                        'Comment'
+                    )}
                 </Button>
                 ) : (
                 <div className="whitespace-nowrap">
