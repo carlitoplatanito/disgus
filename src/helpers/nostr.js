@@ -103,46 +103,54 @@ export const getComments = (config, rootEvent, force) => new Promise((resolve) =
   fetchPass(queriedIds);
 });
 
-export const getPubkey = (pubkey, relays) => new Promise((resolve) => {
+// In-memory cache & in-flight tracking: avoids duplicate relay subscriptions and redundant JSON.parse
+const profileMemoryCache = new Map();
+const inFlightProfiles = new Map();
+
+export const getPubkey = (pubkey, relays) => {
+  if (profileMemoryCache.has(pubkey)) return profileMemoryCache.get(pubkey);
+  if (inFlightProfiles.has(pubkey)) return inFlightProfiles.get(pubkey);
+
+  if (typeof localStorage !== 'undefined' && localStorage.getItem(`p:${pubkey}`)) {
+    try {
+      const user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
+      if (user?.created_at > 0) {
+        const res = Promise.resolve(user);
+        profileMemoryCache.set(pubkey, res);
+        return res;
+      }
+    } catch (e) { /* ignore invalid JSON */ }
+  }
+
   let user = { pubkey, created_at: 0 };
   let returned = false;
 
-  if (localStorage.getItem(`p:${pubkey}`)) {
-    user = JSON.parse(localStorage.getItem(`p:${pubkey}`));
-    if (user.created_at > 0) {
-      resolve(user);
-      return;
-    }
-  }
-
-  const pool = new SimplePool();
-  const sub = pool.subscribe(relays, {
-    kinds: [0],
-    authors: [pubkey]
-  }, {
-    onevent(_event) {
-      if (returned) return;
-      if (!user.created_at || _event.created_at > user.created_at) {
-        try {
-          user = {
-            ...user,
-            ...JSON.parse(_event.content),
-            created_at: _event.created_at
-          };
-          localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
-          resolve(user);
-          returned = true;
-        } catch (e) {
-          // invalid JSON content
+  const promise = new Promise((resolve) => {
+    const pool = new SimplePool();
+    const sub = pool.subscribe(relays, { kinds: [0], authors: [pubkey] }, {
+      onevent(_event) {
+        if (returned) return;
+        if (!user.created_at || _event.created_at > user.created_at) {
+          try {
+            user = { ...user, ...JSON.parse(_event.content), created_at: _event.created_at };
+            localStorage.setItem(`p:${pubkey}`, JSON.stringify(user));
+            profileMemoryCache.set(pubkey, Promise.resolve(user));
+            resolve(user);
+            returned = true;
+          } catch (e) { /* invalid JSON content */ }
         }
+      },
+      oneose() {
+        try { sub.close(); } catch (e) { /* ignore */ }
+        try { pool.close(relays); } catch (e) { /* ignore */ }
+        if (!returned) resolve(user);
       }
-    },
-    oneose() {
-      try { sub.close(); } catch (e) { /* ignore */ }
-      try { pool.close(relays); } catch (e) { /* ignore */ }
-    }
-  });
-});
+    });
+  }).finally(() => inFlightProfiles.delete(pubkey));
+
+  inFlightProfiles.set(pubkey, promise);
+  return promise;
+};
 
 export const createRootEvent = (config) => new Promise((resolve) => {
   const { pubkey, title, description, canonical, relays } = config;
