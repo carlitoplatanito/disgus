@@ -19,3 +19,8 @@
 
 **Learning:** Checking incoming Nostr events during WebSocket streaming with `Array.prototype.some` and deduplicating array items with `filter` + `findIndex` incurs O(N²) time complexity per fetch pass.
 **Action:** Pre-seed a `Set` with known IDs for O(1) streaming lookups and O(N) linear array deduplication.
+
+## 2026-11-04 - Redundant in-flight WebSocket subscriptions and storage deserialization for shared author profiles
+
+**Learning:** When multiple comment items mount simultaneously with repeated author pubkeys, calling `getPubkey` independently creates duplicate WebSocket subscriptions across all configured relays for the exact same pubkey before initial responses arrive, and triggers redundant `localStorage` lookups and `JSON.parse` operations.
+**Action:** Track in-flight promises in a `Map` keyed by pubkey to share active requests among concurrent callers, and cache resolved profile promises in an in-memory `Map` to bypass repeated `localStorage.getItem` and `JSON.parse`.
