@@ -53,7 +53,9 @@ export function sanitizeUrl(url) {
         if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
             return trimmed;
         }
-        if (parsed.protocol === 'data:' && /^data:image\//i.test(trimmed)) {
+        // Disallow data:image/svg+xml and restrict data URIs to safe raster image MIME types
+        // to prevent script execution/XSS via embedded SVG scripts or non-image content.
+        if (parsed.protocol === 'data:' && /^data:image\/(?:png|jpe?g|gif|webp)(?:;[a-z0-9-]+=[a-z0-9-]+)*;base64,/i.test(trimmed)) {
             return trimmed;
         }
     } catch (e) {
