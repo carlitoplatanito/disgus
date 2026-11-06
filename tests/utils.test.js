@@ -46,16 +46,22 @@ test('getParentEventId ignores mention tags in positional fallback', () => {
   assert.equal(getParentEventId(tagsWithMention), 'rootId123');
 });
 
-test('sanitizeUrl allows valid http, https, and image data URIs', () => {
+test('sanitizeUrl allows valid http, https, and safe raster image data URIs', () => {
   assert.equal(sanitizeUrl('https://example.com/avatar.png'), 'https://example.com/avatar.png');
   assert.equal(sanitizeUrl('http://example.com/avatar.jpg'), 'http://example.com/avatar.jpg');
   assert.equal(sanitizeUrl('data:image/png;base64,iVBORw0KGgoAAAANSUHGgo='), 'data:image/png;base64,iVBORw0KGgoAAAANSUHGgo=');
+  assert.equal(sanitizeUrl('data:image/jpeg;base64,/9j/4AAQSkZJRg=='), 'data:image/jpeg;base64,/9j/4AAQSkZJRg==');
+  assert.equal(sanitizeUrl('data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAQAcJaQAA3AA/v3AgA=='), 'data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAQAcJaQAA3AA/v3AgA==');
+  assert.equal(sanitizeUrl('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
 });
 
 test('sanitizeUrl rejects dangerous or invalid URLs', () => {
   assert.equal(sanitizeUrl('javascript:alert(1)'), null);
   assert.equal(sanitizeUrl('JAVASCRIPT:alert(1)'), null);
   assert.equal(sanitizeUrl('data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=='), null);
+  assert.equal(sanitizeUrl('data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+'), null);
+  assert.equal(sanitizeUrl('data:image/svg+xml;utf8,<svg onload=alert(1)>'), null);
+  assert.equal(sanitizeUrl('data:image/html,<script>alert(1)</script>'), null);
   assert.equal(sanitizeUrl('/relative/path.png'), null);
   assert.equal(sanitizeUrl('not a url'), null);
   assert.equal(sanitizeUrl(null), null);
