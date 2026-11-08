@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import Comment from './components/Comment';
 import CommentForm from './components/CommentForm';
 import UserForm from './components/UserForm';
+import { ChatBubbleLeftEllipsisIcon } from '@heroicons/react/24/outline';
 import { UserProvider } from './context/user';
 import { RootProvider, RootConsumer } from './context/root';
 import { getParentEventId } from './helpers/utils';
@@ -54,16 +55,25 @@ function CommentList({ comments }) {
     });
   }, [comments]);
 
-  if (processedComments.length === 0) {
+  if (!comments) {
     return null;
   }
 
+  if (processedComments.length === 0) {
+    return (
+      <div className="py-8 text-center text-gray-500" role="status">
+        <ChatBubbleLeftEllipsisIcon className="mx-auto h-8 w-8 opacity-60 mb-2" aria-hidden="true" />
+        <p className="text-sm">No comments yet. Be the first to share your thoughts!</p>
+      </div>
+    );
+  }
+
   return (
-    <>
+    <div>
       {processedComments.map((comment) => (
         <Comment key={comment.id} comment={comment} />
       ))}
-    </>
+    </div>
   );
 }
 
@@ -74,11 +84,11 @@ function App({ config }) {
         <div className="relative text-left mx-auto px-2 sm:px-4">
             <UserForm />
             <CommentForm />
-            <div>
+            <section aria-label="Comments">
               <RootConsumer>
                 {({ comments }) => <CommentList comments={comments} />}
               </RootConsumer>
-            </div>
+            </section>
           </div>
       </UserProvider>
     </RootProvider>
